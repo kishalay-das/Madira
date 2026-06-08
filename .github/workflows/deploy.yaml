@@ -8,9 +8,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Your secrets live in a GitHub Environment named "secrets", so the job
+    # Your secrets live in a GitHub Environment named "production", so the job
     # must declare it to access them.
-    environment: secrets
+    environment: production
 
     # Required so the Vercel CLI knows which project to deploy to.
     # Get these by running `npx vercel link` locally (creates .vercel/project.json).
