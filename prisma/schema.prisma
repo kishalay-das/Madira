@@ -1,0 +1,203 @@
+// Nocturne — Premium Spirits Delivery
+// PostgreSQL schema (Prisma ORM)
+//
+// Setup:
+//   npm install prisma @prisma/client
+//   npx prisma generate
+//   npx prisma migrate dev --name init
+//   npx prisma db seed
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" for local dev; musl target for the Alpine Docker runtime.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum MembershipTier {
+  NONE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum DeliverySlot {
+  PRIORITY
+  STANDARD
+  SCHEDULED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  passwordHash  String?
+  role          Role           @default(CUSTOMER)
+  tier          MembershipTier @default(NONE)
+  loyaltyPoints Int            @default(0)
+  referralCode  String         @unique @default(cuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
+  wishlist  WishlistItem[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  tagline  String?
+  hue      String    @default("#c8a24b")
+  count    Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  distillery    String
+  description   String
+  images        String[] // up to 4 uploaded photo URLs
+  video         String?  @db.Text // optional product video URL (Cloudinary)
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryLabel String
+  price         Decimal  @db.Decimal(10, 2)
+  compareAt     Decimal? @db.Decimal(10, 2)
+  abv           Float
+  volume        String
+  origin        String
+  age           String?
+  rating        Float    @default(0)
+  reviewsCount  Int      @default(0)
+  stock         Int      @default(0)
+  badge         String?
+  tags          String[]
+  notes         String[]
+  pairings      String[]
+  noseNote      String?
+  palateNote    String?
+  finishNote    String?
+  // procedural bottle palette
+  paletteGlass  String   @default("#1a1a1a")
+  paletteLiquid String   @default("#8a4422")
+  paletteLabel  String   @default("#e9d8a6")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orderItems    OrderItem[]
+  reviews       Review[]
+  wishlistItems WishlistItem[]
+
+  @@index([categoryId])
+  @@index([slug])
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  line1      String
+  line2      String?
+  city       String
+  postalCode String
+  country    String  @default("US")
+  isPrimary  Boolean @default(false)
+
+  orders Order[]
+}
+
+model Order {
+  id           String       @id @default(cuid())
+  number       String       @unique
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  addressId    String?
+  address      Address?     @relation(fields: [addressId], references: [id])
+  status       OrderStatus  @default(PENDING)
+  deliverySlot DeliverySlot @default(STANDARD)
+  scheduledFor DateTime?
+  giftWrap     Boolean      @default(false)
+  subtotal     Decimal      @db.Decimal(10, 2)
+  discount     Decimal      @default(0) @db.Decimal(10, 2)
+  shipping     Decimal      @default(0) @db.Decimal(10, 2)
+  tax          Decimal      @default(0) @db.Decimal(10, 2)
+  total        Decimal      @db.Decimal(10, 2)
+  couponId     String?
+  coupon       Coupon?      @relation(fields: [couponId], references: [id])
+  createdAt    DateTime     @default(now())
+
+  items OrderItem[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  title     String
+  body      String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model WishlistItem {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Coupon {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  description  String?
+  percentOff   Int?
+  amountOff    Decimal?  @db.Decimal(10, 2)
+  active       Boolean   @default(true)
+  expiresAt    DateTime?
+  redemptions  Int       @default(0)
+
+  orders Order[]
+}

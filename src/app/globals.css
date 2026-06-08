@@ -1,0 +1,403 @@
+@import "tailwindcss";
+
+/* ============================================================
+   NOCTURNE — Premium Spirits Delivery
+   Luxury design system · Light + Dark themes
+   ------------------------------------------------------------
+   Themed tokens default to DARK (in @theme / :root) and are
+   overridden for light mode under :root.light. Accent colors
+   (gold, burgundy, emerald) are constant across themes.
+   ============================================================ */
+
+@theme {
+  /* ============================================================
+     MIDNIGHT NAVY & CHAMPAGNE GOLD
+     Themed tokens default to DARK; overridden under :root.light.
+     ============================================================ */
+
+  /* ---- Surfaces (DARK defaults) ---- */
+  --color-void: #08080a;
+  --color-night: #0b0b0f;
+  --color-charcoal: #14141a;
+  --color-charcoal-2: #1c1c24;
+  --color-graphite: #25252f;
+  --color-hairline: rgba(200, 162, 75, 0.16);
+
+  /* ---- Text ---- */
+  --color-cream: #f5f1e8;
+  --color-parchment: #d9d3c4;
+  --color-muted: #8d8779;
+  --color-muted-2: #5e5a51;
+
+  /* ---- Gold accents ---- */
+  --color-gold: #c8a24b;
+  --color-gold-bright: #e3c270;
+  --color-champagne: #ecddae;
+  --color-bronze: #a6713c;
+
+  /* ---- Semantic ---- */
+  --color-success: #2f9e6a;
+  --color-warning: #e6b85c;
+  --color-error: #c0556b;
+
+  /* ---- Brand jewels ---- */
+  --color-burgundy: #6e1f2e;
+  --color-burgundy-deep: #43121c;
+  --color-emerald: #1c5c46;
+  --color-emerald-deep: #0e3527;
+
+  --color-ink: #0b0b0f; /* constant dark — text on gold/light accents */
+
+  /* ---- Type / radius / easing ---- */
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --radius-luxe: 1.25rem;
+  --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---- Extra breakpoint for large-phone (2-up) layouts ---- */
+  --breakpoint-xs: 30rem; /* 480px */
+}
+
+/* ---- Composite surfaces driven by raw vars (DARK defaults) ---- */
+:root {
+  color-scheme: dark;
+
+  /* ---- Requested semantic alias tokens ---- */
+  --background: var(--color-night);
+  --surface: var(--color-charcoal);
+  --surface-elevated: var(--color-charcoal-2);
+  --text-primary: var(--color-cream);
+  --text-secondary: var(--color-parchment);
+  --text-muted: var(--color-muted);
+  --accent-primary: var(--color-gold-bright);
+  --accent-secondary: var(--color-gold);
+  --border-color: var(--color-hairline);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --error: var(--color-error);
+
+  /* ---- Composite surfaces ---- */
+  --glass-bg: linear-gradient(160deg, rgba(20, 20, 26, 0.72), rgba(11, 11, 15, 0.55));
+  --glass-border: rgba(200, 162, 75, 0.16);
+  --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.02);
+  --glass-light-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
+  --glass-light-border: rgba(255, 255, 255, 0.08);
+
+  --hover-soft: rgba(255, 255, 255, 0.05);
+  --scrim: rgba(8, 8, 10, 0.8);
+
+  --stage-top: #101015;
+  --stage-bottom: #0b0b0f;
+  --stage-fade: rgba(0, 0, 0, 0.6);
+  --panel-grad: linear-gradient(120deg, #0d0d12, #0a0e0c);
+  --panel-fade: #0a0a0e;
+
+  --card-hover-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(200, 162, 75, 0.12);
+
+  --backdrop:
+    radial-gradient(1200px 600px at 75% -10%, rgba(110, 31, 46, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(28, 92, 70, 0.14), transparent 55%),
+    radial-gradient(700px 700px at 90% 80%, rgba(200, 162, 75, 0.06), transparent 60%),
+    var(--color-night);
+
+  --scrollbar-track: var(--color-void);
+  --scrollbar-thumb: linear-gradient(var(--color-graphite), var(--color-charcoal));
+}
+
+/* ============================================================
+   LIGHT THEME
+   ============================================================ */
+:root.light {
+  color-scheme: light;
+
+  /* ---- Surfaces ---- */
+  --color-void: #f1eee6;
+  --color-night: #ffffff;
+  --color-charcoal: #ffffff;
+  --color-charcoal-2: #f7f4ee;
+  --color-graphite: #e7e2d6;
+  --color-hairline: rgba(58, 44, 16, 0.12);
+
+  /* ---- Text ---- */
+  --color-cream: #1b1a18;
+  --color-parchment: #3d3a34;
+  --color-muted: #6c685f;
+  --color-muted-2: #a8a294;
+
+  /* ---- Accents ---- */
+  --color-champagne: #9c7a2c; /* deep gold — readable on ivory */
+
+  --accent-primary: var(--color-gold);
+  --accent-secondary: var(--color-bronze);
+
+  /* ---- Composite surfaces ---- */
+  --glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(252, 250, 245, 0.78));
+  --glass-border: rgba(58, 44, 16, 0.1);
+  --glass-shadow: 0 20px 45px -30px rgba(48, 36, 12, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --glass-light-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(248, 245, 238, 0.7));
+  --glass-light-border: rgba(58, 44, 16, 0.1);
+
+  --hover-soft: rgba(40, 30, 10, 0.04);
+  --scrim: rgba(28, 22, 12, 0.42);
+
+  --stage-top: #faf7f0;
+  --stage-bottom: #efe9dc;
+  --stage-fade: rgba(58, 44, 16, 0.05);
+  --panel-grad: linear-gradient(120deg, #fbf9f3, #f3eee4);
+  --panel-fade: #f3eee4;
+
+  --card-hover-shadow: 0 26px 50px -30px rgba(48, 36, 12, 0.32), 0 0 0 1px rgba(200, 162, 75, 0.28);
+
+  --backdrop:
+    radial-gradient(1200px 600px at 75% -10%, rgba(110, 31, 46, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(28, 92, 70, 0.05), transparent 55%),
+    radial-gradient(700px 700px at 90% 80%, rgba(200, 162, 75, 0.09), transparent 60%),
+    var(--color-night);
+
+  --scrollbar-track: #efeae0;
+  --scrollbar-thumb: linear-gradient(#d6d0c2, #c4bdac);
+}
+
+* {
+  border-color: var(--color-hairline);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%; /* prevent iOS auto-zoom of text */
+}
+
+body {
+  background-color: var(--color-night);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Media never overflows its container */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Ambient luxury backdrop */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--backdrop);
+}
+
+/* ---- Smooth theme transition (enabled after first paint) ---- */
+html.theme-ready,
+html.theme-ready body {
+  transition: background-color 0.45s var(--ease-silk), color 0.45s var(--ease-silk);
+}
+html.theme-ready *:not(.no-theme-anim),
+html.theme-ready *:not(.no-theme-anim)::before,
+html.theme-ready *:not(.no-theme-anim)::after {
+  transition-property: background-color, border-color, color, fill, box-shadow;
+  transition-duration: 0.4s;
+  transition-timing-function: var(--ease-silk);
+}
+
+/* ---------- Premium focus ring (gold) ---------- */
+:where(a, button, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Soft champagne glow on hover (opt-in) */
+.hover-glow {
+  transition: box-shadow 0.5s var(--ease-silk), border-color 0.5s var(--ease-silk),
+    transform 0.5s var(--ease-silk);
+}
+.hover-glow:hover {
+  box-shadow: 0 0 0 1px rgba(200, 162, 75, 0.3), 0 18px 40px -22px rgba(200, 162, 75, 0.4);
+}
+
+/* ---------- Typography helpers ---------- */
+.font-display {
+  font-family: var(--font-display);
+}
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ---------- Fluid typography (scales smoothly 320px → ultra-wide) ---------- */
+.text-hero {
+  font-size: clamp(2.2rem, 1.1rem + 5.4vw, 4.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+}
+.text-section {
+  font-size: clamp(1.7rem, 1.1rem + 2.9vw, 3rem);
+  line-height: 1.1;
+}
+.text-fluid-lg {
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  line-height: 1.2;
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+/* Gradient gold text */
+.text-gold-gradient {
+  background: linear-gradient(180deg, #f3e3b1 0%, var(--color-gold) 55%, #9c7a2c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Glass surfaces ---------- */
+.glass {
+  background: var(--glass-light-bg);
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  border: 1px solid var(--glass-light-border);
+}
+
+.glass-dark {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Subtle luxury dot texture (layered over panels) */
+.lux-texture {
+  background-image: radial-gradient(rgba(200, 162, 75, 0.08) 1px, transparent 1.4px);
+  background-size: 16px 16px;
+}
+
+/* Hairline divider with gold center */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold) 50%, transparent);
+  opacity: 0.6;
+}
+
+/* Gold ring on hover */
+.luxe-card {
+  position: relative;
+  transition: transform 0.6s var(--ease-silk), border-color 0.6s var(--ease-silk),
+    box-shadow 0.6s var(--ease-silk);
+}
+.luxe-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(200, 162, 75, 0.5);
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* Shimmer sweep */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--ease-silk);
+  pointer-events: none;
+}
+.shimmer:hover::after {
+  transform: translateX(120%);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
+}
+
+::selection {
+  background: rgba(200, 162, 75, 0.3);
+  color: var(--color-cream);
+}
+
+/* ---------- Keyframe animations ---------- */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(0.6deg); }
+}
+.animate-float { animation: float-slow 7s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.animate-pulse-glow { animation: pulse-glow 4s ease-in-out infinite; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 38s linear infinite; }
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.container-luxe {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 480px) {
+  .container-luxe { padding-inline: 1.5rem; }
+}
+@media (min-width: 768px) {
+  .container-luxe { padding-inline: 2.5rem; }
+}
+@media (min-width: 1536px) {
+  .container-luxe { max-width: 1440px; padding-inline: 3rem; }
+}
+/* Minimum comfortable touch target on coarse pointers */
+@media (pointer: coarse) {
+  a, button, [role="button"], input[type="checkbox"], select {
+    touch-action: manipulation;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

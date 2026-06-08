@@ -1,0 +1,55 @@
+services:
+  # One-shot: applies migrations and seeds the DB, then exits. Uses the
+  # `builder` image stage (has the Prisma CLI, tsx, schema, migrations & seed).
+  migrate:
+    build:
+      context: .
+      target: builder
+    environment:
+      - DATABASE_URL=postgresql://nocturne:nocturne@db:5432/nocturne?schema=public
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://nocturne:nocturne@db:5432/nocturne?schema=public
+      # Auth.js requires a secret at runtime. Uses host/.env AUTH_SECRET if set,
+      # otherwise this demo fallback. CHANGE THIS for any real deployment.
+      - AUTH_SECRET=${AUTH_SECRET:-nocturne-demo-secret-change-me-please-0123456789abcdef}
+      - AUTH_TRUST_HOST=true
+      # Cloudinary image hosting (read from host/.env)
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=nocturne
+      - POSTGRES_PASSWORD=nocturne
+      - POSTGRES_DB=nocturne
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nocturne"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

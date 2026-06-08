@@ -1,0 +1,153 @@
+import "server-only";
+import type {
+  Category as DbCategory,
+  Product as DbProduct,
+} from "@prisma/client";
+import { prisma } from "./prisma";
+import type { Category, CategorySlug, Product } from "./types";
+
+/* ------------------------------------------------------------------ *
+ * Mappers: Prisma rows -> the plain UI types the components consume.
+ * (Keeps Decimals as numbers and nullables as `undefined`.)
+ * ------------------------------------------------------------------ */
+
+type DbProductWithCategory = DbProduct & { category: DbCategory | null };
+
+function toProduct(p: DbProductWithCategory): Product {
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    distillery: p.distillery,
+    category: (p.category?.slug ?? "whiskey") as CategorySlug,
+    categoryLabel: p.categoryLabel,
+    price: Number(p.price),
+    compareAt: p.compareAt != null ? Number(p.compareAt) : undefined,
+    abv: p.abv,
+    volume: p.volume,
+    origin: p.origin,
+    age: p.age ?? undefined,
+    rating: p.rating,
+    reviews: p.reviewsCount,
+    images: p.images,
+    video: p.video ?? undefined,
+    palette: {
+      glass: p.paletteGlass,
+      liquid: p.paletteLiquid,
+      label: p.paletteLabel,
+    },
+    tags: p.tags,
+    tasting: {
+      nose: p.noseNote ?? "",
+      palate: p.palateNote ?? "",
+      finish: p.finishNote ?? "",
+    },
+    notes: p.notes,
+    pairings: p.pairings,
+    description: p.description,
+    badge: (p.badge ?? undefined) as Product["badge"],
+    stock: p.stock,
+  };
+}
+
+function toCategory(c: DbCategory): Category {
+  return {
+    slug: c.slug as CategorySlug,
+    name: c.name,
+    tagline: c.tagline ?? "",
+    hue: c.hue,
+    count: c.count,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Queries
+ * ------------------------------------------------------------------ */
+
+export type ProductSort =
+  | "popular"
+  | "rating"
+  | "price-asc"
+  | "price-desc"
+  | "newest";
+
+export interface ProductQuery {
+  category?: string;
+  q?: string;
+  sort?: ProductSort;
+  limit?: number;
+}
+
+const orderByFor = (sort?: ProductSort) => {
+  switch (sort) {
+    case "rating":
+      return { rating: "desc" as const };
+    case "price-asc":
+      return { price: "asc" as const };
+    case "price-desc":
+      return { price: "desc" as const };
+    case "newest":
+      return { createdAt: "desc" as const };
+    default:
+      return { reviewsCount: "desc" as const };
+  }
+};
+
+export async function getProducts(opts: ProductQuery = {}): Promise<Product[]> {
+  const rows = await prisma.product.findMany({
+    where: {
+      ...(opts.category ? { category: { slug: opts.category } } : {}),
+      ...(opts.q
+        ? {
+            OR: [
+              { name: { contains: opts.q, mode: "insensitive" } },
+              { distillery: { contains: opts.q, mode: "insensitive" } },
+              { categoryLabel: { contains: opts.q, mode: "insensitive" } },
+              { origin: { contains: opts.q, mode: "insensitive" } },
+              { tags: { has: opts.q } },
+            ],
+          }
+        : {}),
+    },
+    include: { category: true },
+    orderBy: orderByFor(opts.sort),
+    ...(opts.limit ? { take: opts.limit } : {}),
+  });
+  return rows.map(toProduct);
+}
+
+export async function getProductSlugs(): Promise<string[]> {
+  const rows = await prisma.product.findMany({ select: { slug: true } });
+  return rows.map((r) => r.slug);
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const row = await prisma.product.findUnique({
+    where: { slug },
+    include: { category: true },
+  });
+  return row ? toProduct(row) : null;
+}
+
+export async function getRelatedProducts(product: Product): Promise<Product[]> {
+  const sameCategory = await prisma.product.findMany({
+    where: { category: { slug: product.category }, NOT: { id: product.id } },
+    include: { category: true },
+    take: 4,
+  });
+  if (sameCategory.length >= 4) return sameCategory.map(toProduct);
+
+  const fill = await prisma.product.findMany({
+    where: {
+      NOT: { id: { in: [product.id, ...sameCategory.map((p) => p.id)] } },
+    },
+    include: { category: true },
+    take: 4 - sameCategory.length,
+  });
+  return [...sameCategory, ...fill].map(toProduct);
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const rows = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  return rows.map(toCategory);
+}

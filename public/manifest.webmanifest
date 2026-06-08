@@ -1,0 +1,20 @@
+{
+  "name": "Nocturne — Premium Spirits Delivered",
+  "short_name": "Nocturne",
+  "description": "A modern luxury house for the world's finest spirits, delivered with concierge care.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0b0f",
+  "theme_color": "#0b0b0f",
+  "categories": ["shopping", "lifestyle", "food"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
