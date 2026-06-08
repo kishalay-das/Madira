@@ -414,7 +414,7 @@ html.theme-ready *:not(.no-theme-anim)::after {
 /* Push main content down on desktop to clear the floating fixed capsule navbar */
 @media (min-width: 1024px) {
   main {
-    padding-top: 7.5rem;
+    padding-top: 9rem;
   }
   main:has(.homepage-hero) {
     padding-top: 0;
