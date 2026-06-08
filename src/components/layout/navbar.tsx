@@ -66,91 +66,167 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* 1. DESKTOP VERSION (The "Floating Capsule" Design) */}
       <header
-        className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          scrolled
-            ? "glass-dark border-b border-hairline shadow-[0_18px_40px_-30px_rgba(0,0,0,0.9)]"
-            : "border-b border-transparent"
-        )}
+        className="fixed left-0 right-0 z-50 hidden lg:flex justify-center px-4 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={{
+          top: scrolled ? "1.5rem" : "3.5rem"
+        }}
       >
-        <nav
-          className={cn(
-            "container-luxe flex items-center justify-between gap-2 transition-all duration-500",
-            scrolled ? "h-16 lg:h-[4.5rem]" : "h-[4.25rem] lg:h-24"
-          )}
+        <motion.nav
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex items-center gap-2 p-2 rounded-full border border-gold/15 transition-all duration-500 relative group overflow-hidden hover:border-gold/30 hover:shadow-[0_0_30px_rgba(200,162,75,0.18)]"
+          style={{
+            background: "var(--glass-bg)",
+            backdropFilter: "blur(20px) saturate(120%)",
+            WebkitBackdropFilter: "blur(20px) saturate(120%)",
+            boxShadow: "var(--glass-shadow), 0 8px 32px rgba(0, 0, 0, 0.15)",
+          }}
         >
-          {/* Left: mobile menu + nav */}
-          <div className="flex flex-1 items-center gap-7">
-            <button
-              className="-ml-2.5 flex h-11 w-11 items-center justify-center rounded-full text-cream transition-colors hover:bg-[var(--hover-soft)] hover:text-gold lg:hidden"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu size={22} />
-            </button>
-            <ul className="hidden items-center gap-6 lg:flex xl:gap-8">
-              {links.slice(0, 3).map((l) => (
-                <NavLink key={l.href} {...l} active={isActive(l.href)} />
-              ))}
-            </ul>
+          {/* Subtle gold inner highlight */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent rounded-full pointer-events-none" />
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.6 }}
+            className="relative z-10"
+          >
+            <Link href="/" className="flex items-center gap-2.5 pl-4 pr-6 group/logo">
+              <motion.div
+                whileHover={{ scale: 1.15, rotate: 20 }}
+                className="w-5 h-5 bg-gradient-to-br from-gold/60 via-amber-600 to-gold rounded-full group-hover/logo:from-gold/80 group-hover/logo:to-gold transition-all duration-300 shadow-[0_0_12px_rgba(200,162,75,0.5)]"
+              />
+              <span className="text-sm font-medium text-cream tracking-wide group-hover/logo:text-gold transition-colors duration-300">
+                NOCTURNE
+              </span>
+            </Link>
+          </motion.div>
+
+          <div className="flex items-center relative z-10">
+            {links.map((l, idx) => (
+              <motion.div
+                key={l.href}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + idx * 0.05, duration: 0.4 }}
+              >
+                <Link
+                  href={l.href}
+                  className={cn(
+                    "relative px-4 py-2.5 text-xs uppercase tracking-wider transition-all duration-300 rounded-full group/nav-item overflow-hidden block",
+                    isActive(l.href)
+                      ? "text-gold"
+                      : "text-parchment/70 hover:text-cream"
+                  )}
+                >
+                  {/* Active state animated underline */}
+                  {isActive(l.href) && (
+                    <motion.div
+                      layoutId="navbar-active"
+                      className="absolute inset-0 bg-gradient-to-r from-gold/25 to-gold/10 rounded-full -z-10 shadow-[inset_0_1px_2px_rgba(200,162,75,0.15)]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative">{l.label}</span>
+                </Link>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Center: logo — kept in the flex flow between two equal flex-1 rails
-              so it stays optically centred but never overlaps the nav links. */}
-          <Link
-            href="/"
-            aria-label="Nocturne — home"
-            className="group shrink-0 px-3 text-center sm:px-6"
+          <div
+            className="ml-2 flex items-center gap-1 backdrop-blur-md rounded-full p-1.5 border border-gold/15 relative z-10 transition-all duration-300"
+            style={{ background: "rgba(200, 162, 75, 0.04)" }}
           >
-            <span className="block whitespace-nowrap font-display text-xl leading-none tracking-[0.2em] text-cream transition-colors duration-500 group-hover:text-gold-bright xs:text-2xl sm:tracking-[0.3em] md:text-[1.7rem] md:tracking-[0.3em] xl:text-[1.85rem] xl:tracking-[0.34em]">
-              NOCTURNE
-            </span>
-            <span className="mt-1.5 flex items-center justify-center gap-2 text-[0.5rem] uppercase tracking-[0.34em] text-gold sm:text-[0.58rem] sm:tracking-[0.46em]">
-              <span className="hidden h-px w-5 bg-gradient-to-r from-transparent to-gold/70 sm:block" />
-              Premium Spirits
-              <span className="hidden h-px w-5 bg-gradient-to-l from-transparent to-gold/70 sm:block" />
-            </span>
-          </Link>
+            <ThemeToggle className="border-none hover:bg-white/10 text-cream/70 hover:text-cream" />
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSearchOpen(true)}
+              className="p-2.5 text-cream/70 hover:text-cream rounded-full transition-all duration-300 relative group/icon hover:bg-white/10"
+              aria-label="Search"
+            >
+              <Search size={16} className="relative z-10" />
+            </motion.button>
 
-          {/* Right: nav + actions */}
-          <div className="flex flex-1 items-center justify-end gap-4 lg:gap-5">
-            <ul className="hidden items-center gap-6 lg:flex xl:gap-8">
-              {links.slice(3).map((l) => (
-                <NavLink key={l.href} {...l} active={isActive(l.href)} />
-              ))}
-            </ul>
-            <div className="flex items-center gap-0.5 text-cream sm:gap-1">
-              <ThemeToggle className="hidden sm:flex" />
-              <button
-                aria-label="Search"
-                onClick={() => setSearchOpen(true)}
-                className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover-soft)] hover:text-gold"
-              >
-                <Search size={19} />
-              </button>
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Link
                 href="/account"
+                className="p-2.5 text-cream/70 hover:text-cream rounded-full transition-all duration-300 relative group/icon flex items-center justify-center hover:bg-white/10"
                 aria-label="Account"
-                className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover-soft)] hover:text-gold"
               >
-                <User size={19} />
+                <User size={16} className="relative z-10" />
               </Link>
-              <button
-                aria-label="Cart"
-                onClick={openCart}
-                className="relative flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover-soft)] hover:text-gold"
-              >
-                <ShoppingBag size={19} />
-                {count > 0 && (
-                  <span className="absolute right-0.5 top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-gradient-to-b from-gold-bright to-gold px-1 text-[0.6rem] font-semibold text-ink shadow-[0_2px_8px_rgba(200,162,75,0.5)]">
-                    {count}
-                  </span>
-                )}
-              </button>
-            </div>
+            </motion.div>
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={openCart}
+              className="relative p-2.5 text-cream/70 hover:text-cream rounded-full transition-all duration-300 group/icon hover:bg-white/10"
+              aria-label="Cart"
+            >
+              <ShoppingBag size={16} className="relative z-10" />
+              {count > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute top-1 right-1 w-2 h-2 bg-gradient-to-br from-gold to-gold-bright rounded-full flex items-center justify-center text-[0.6rem] font-bold text-void animate-pulse"
+                >
+                  {count > 9 ? "9+" : count}
+                </motion.span>
+              )}
+            </motion.button>
           </div>
-        </nav>
+        </motion.nav>
+      </header>
+
+      {/* 2. MOBILE VERSION (Sticky Header) */}
+      <header
+        className="lg:hidden sticky top-0 z-50 w-full border-b border-gold/15 h-16 flex items-center justify-between px-4"
+        style={{
+          background: "var(--glass-bg)",
+          backdropFilter: "blur(20px) saturate(120%)",
+          WebkitBackdropFilter: "blur(20px) saturate(120%)",
+          boxShadow: "var(--glass-shadow)",
+        }}
+      >
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-cream hover:text-gold transition-colors p-2"
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
+        <Link href="/" className="font-display text-lg text-cream hover:text-gold transition-colors tracking-[0.2em]">
+          NOCTURNE
+        </Link>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="text-cream hover:text-gold transition-colors p-2"
+            aria-label="Search"
+          >
+            <Search size={20} />
+          </button>
+          <button
+            onClick={openCart}
+            className="text-cream relative hover:text-gold transition-colors p-2"
+            aria-label="Cart"
+          >
+            <ShoppingBag size={20} />
+            {count > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-gradient-to-b from-gold-bright to-gold px-1 text-[0.6rem] font-semibold text-ink shadow-[0_1px_4px_rgba(200,162,75,0.4)]">
+                {count}
+              </span>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Mobile drawer — premium luxury app feel */}

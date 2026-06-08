@@ -34,6 +34,7 @@ export default async function ShopPage({
       </header>
 
       <ShopClient
+        key={`${category ?? "all"}_${q ?? ""}`}
         initialCategory={category}
         initialQuery={q}
         products={products}

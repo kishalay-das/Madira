@@ -90,47 +90,57 @@ export function SearchOverlay({
         >
           <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            className="glass-dark absolute inset-x-0 top-0 border-b border-hairline"
-            initial={{ y: -32, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -32, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-x-0 mx-auto top-4 md:top-28 z-[96] w-[95%] md:w-[92%] max-w-2xl p-4 md:p-6 rounded-3xl border border-gold/20 shadow-2xl transition-all duration-500 overflow-hidden"
+            initial={{ scale: 0.95, y: -20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.95, y: -20, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              background: "var(--glass-bg)",
+              backdropFilter: "blur(20px) saturate(120%)",
+              WebkitBackdropFilter: "blur(20px) saturate(120%)",
+              boxShadow: "var(--glass-shadow), 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(200, 162, 75, 0.12)",
+            }}
           >
-            <div className="container-luxe py-5">
+            {/* Subtle gold inner highlight */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-gold/30 to-transparent rounded-t-3xl pointer-events-none" />
+
+            <div className="relative">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   goToAll();
                 }}
-                className="flex items-center gap-3"
+                className="flex items-center gap-3 rounded-full border border-gold/15 bg-void/30 px-4 py-1.5 focus-within:border-gold/40 focus-within:shadow-[0_0_15px_rgba(200,162,75,0.08)] transition-all duration-300"
               >
-                <Search size={20} className="shrink-0 text-gold" />
+                <Search size={18} className="shrink-0 text-gold/80" />
                 <input
                   ref={inputRef}
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search whiskey, wine, champagne…"
-                  className="h-11 flex-1 bg-transparent text-base text-cream placeholder:text-muted-2 focus:outline-none md:text-lg"
+                  className="h-10 flex-1 bg-transparent text-sm text-cream placeholder:text-muted-2 focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-base"
+                  style={{ outline: "none", boxShadow: "none" }}
                 />
-                {loading && <Loader2 size={18} className="shrink-0 animate-spin text-muted" />}
+                {loading && <Loader2 size={16} className="shrink-0 animate-spin text-muted" />}
                 <button
                   type="button"
                   onClick={onClose}
                   aria-label="Close search"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-parchment transition-colors hover:text-cream"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-parchment/70 hover:bg-white/10 hover:text-cream transition-colors"
                 >
-                  <X size={20} />
+                  <X size={16} />
                 </button>
               </form>
 
               {!showResults && (
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-5 flex flex-wrap items-center gap-2">
                   <span className="text-xs text-muted">Popular:</span>
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => setQ(s)}
-                      className="rounded-full border border-hairline px-3 py-1 text-xs text-parchment transition-colors hover:border-gold/40 hover:text-gold"
+                      className="rounded-full border border-gold/15 px-3 py-1 text-xs text-parchment/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105 hover:border-gold/40 hover:text-gold hover:bg-gold/5"
                     >
                       {s}
                     </button>
@@ -139,7 +149,7 @@ export function SearchOverlay({
               )}
 
               {showResults && (
-                <div className="mt-4 max-h-[62vh] overflow-y-auto">
+                <div className="mt-5 max-h-[50vh] overflow-y-auto pr-1">
                   {results.length === 0 && !loading ? (
                     <p className="py-8 text-center text-sm text-muted">
                       No bottles match “{q.trim()}”.
@@ -151,7 +161,7 @@ export function SearchOverlay({
                           <Link
                             href={`/product/${p.slug}`}
                             onClick={onClose}
-                            className="flex items-center gap-3 rounded-xl border border-hairline bg-night/40 p-3 transition-colors hover:border-gold/40"
+                            className="flex items-center gap-3 rounded-xl border border-gold/10 bg-void/20 p-3 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] hover:border-gold/30 hover:bg-gold/5 hover:shadow-[0_4px_20px_rgba(200,162,75,0.06)]"
                           >
                             <div className="h-14 w-10 shrink-0">
                               <Bottle product={p} />
@@ -171,7 +181,7 @@ export function SearchOverlay({
                   {results.length > 0 && (
                     <button
                       onClick={goToAll}
-                      className="mt-3 w-full rounded-xl border border-hairline py-2.5 text-center text-xs uppercase tracking-[0.2em] text-gold transition-colors hover:bg-gold/10"
+                      className="mt-4 w-full rounded-xl border border-gold/20 py-2.5 text-center text-xs uppercase tracking-[0.2em] text-gold transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-gold/10 hover:border-gold/40"
                     >
                       View all results →
                     </button>

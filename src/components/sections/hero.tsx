@@ -21,7 +21,7 @@ export function Hero() {
   const glow = useTransform(scrollYProgress, [0, 1], [1, 0.2]);
 
   return (
-    <section ref={ref} className="relative min-h-[100svh] overflow-hidden">
+    <section ref={ref} className="homepage-hero relative min-h-[100svh] overflow-hidden">
       {/* Ambient glows */}
       <motion.div
         style={{ opacity: glow }}
