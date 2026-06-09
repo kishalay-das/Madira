@@ -87,10 +87,11 @@ export function SearchOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
         >
-          <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={onClose} />
+          <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-md" onClick={onClose} />
           <motion.div
-            className="fixed inset-x-0 mx-auto top-4 md:top-28 z-[96] w-[95%] md:w-[92%] max-w-2xl p-4 md:p-6 rounded-3xl border border-gold/20 shadow-2xl transition-all duration-500 overflow-hidden"
+            className="fixed inset-x-0 mx-auto top-4 md:top-28 z-[96] w-[95%] md:w-[92%] max-w-2xl p-4 md:p-6 rounded-3xl border border-gold/20 shadow-2xl overflow-hidden"
             initial={{ scale: 0.95, y: -20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.95, y: -20, opacity: 0 }}

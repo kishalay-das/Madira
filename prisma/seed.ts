@@ -77,6 +77,7 @@ async function main() {
         name: p.name,
         distillery: p.distillery,
         description: p.description,
+        images: p.images ?? [],
         categoryId: categoryId[p.category],
         categoryLabel: p.categoryLabel,
         price: p.price,

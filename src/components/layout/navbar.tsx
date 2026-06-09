@@ -193,10 +193,10 @@ export function Navbar() {
           onMouseMove={handleMouseMove}
           className="flex items-center gap-2 p-2 rounded-full border border-gold/15 transition-all duration-500 relative group hover:border-gold/30 hover:shadow-[0_0_30px_rgba(200,162,75,0.18)]"
           style={{
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(20px) saturate(120%)",
-            WebkitBackdropFilter: "blur(20px) saturate(120%)",
-            boxShadow: "var(--glass-shadow), 0 8px 32px rgba(0, 0, 0, 0.15)",
+            background: "var(--nav-glass-bg)",
+            backdropFilter: "var(--nav-glass-blur)",
+            WebkitBackdropFilter: "var(--nav-glass-blur)",
+            boxShadow: "var(--glass-shadow), 0 8px 32px rgba(0, 0, 0, 0.12)",
           }}
         >
           {/* Subtle gold inner highlight */}
@@ -418,9 +418,9 @@ export function Navbar() {
       <header
         className="lg:hidden sticky top-0 z-50 w-full border-b border-gold/15 h-16 flex items-center justify-between px-4"
         style={{
-          background: "var(--glass-bg)",
-          backdropFilter: "blur(20px) saturate(120%)",
-          WebkitBackdropFilter: "blur(20px) saturate(120%)",
+          background: "var(--nav-glass-bg)",
+          backdropFilter: "var(--nav-glass-blur)",
+          WebkitBackdropFilter: "var(--nav-glass-blur)",
           boxShadow: "var(--glass-shadow)",
         }}
       >

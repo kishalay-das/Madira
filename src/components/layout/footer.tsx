@@ -56,21 +56,19 @@ const columns = [
   {
     title: "Company",
     links: [
-      { label: "Our Story", href: "/" },
-      { label: "Authenticity Promise", href: "/" },
-      { label: "Careers", href: "/" },
-      { label: "Press", href: "/" },
-      { label: "Sustainability", href: "/" },
+      { label: "Our Story", href: "/our-story" },
+      { label: "Authenticity Promise", href: "/authenticity-promise" },
+      { label: "Press", href: "/press" },
+      { label: "Sustainability", href: "/sustainability" },
     ],
   },
   {
     title: "Support",
     links: [
-      { label: "FAQs", href: "/" },
-      { label: "Contact", href: "/" },
-      { label: "Shipping Policy", href: "/" },
-      { label: "Returns", href: "/" },
-      { label: "Responsible Drinking", href: "/" },
+      { label: "FAQs", href: "/faqs" },
+      { label: "Contact", href: "/contact" },
+      { label: "Shipping Policy", href: "/shipping-policy" },
+      { label: "Responsible Drinking", href: "/responsible-drinking" },
     ],
   },
 ];
