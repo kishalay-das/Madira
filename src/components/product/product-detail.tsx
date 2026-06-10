@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
+  ChevronRight,
   Heart,
   Minus,
   Play,
@@ -16,6 +17,7 @@ import {
   Truck,
   Gift,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import type { Product } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
 import { Bottle } from "@/components/bottle";
@@ -211,7 +213,7 @@ export function ProductDetail({
                 <Plus size={16} />
               </button>
             </div>
-            <Button variant="gold" size="lg" className="flex-1" onClick={() => add(product, qty)}>
+            <Button variant="gold" size="lg" className="order-last w-full whitespace-nowrap sm:order-0 sm:w-auto sm:flex-1" onClick={() => add(product, qty)}>
               <ShoppingBag size={18} /> Add to Cart · {formatPrice(product.price * qty)}
             </Button>
             <button
@@ -373,34 +375,110 @@ function ProductGallery({
     ...(video ? [{ type: "video" as const, src: video }] : []),
   ];
   const [active, setActive] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const current = media[Math.min(active, media.length - 1)];
+
+  // Wrap-around navigation with direction tracking for slide animation.
+  function go(dir: 1 | -1) {
+    setDirection(dir);
+    setActive((a) => (a + dir + media.length) % media.length);
+  }
+
+  // Touch-swipe state — only handles touch events, does not interfere with
+  // the mouse-based MagnifyImage hover lens.
+  const touchStartX = useRef<number | null>(null);
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 40) return;
+    go(delta < 0 ? 1 : -1);
+  }
+
+  // Slide variants: incoming slides in from the direction of travel, outgoing
+  // slides out to the opposite side.
+  const EASE = [0.22, 1, 0.36, 1] as const;
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? "100%" : "-100%", opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
+  };
 
   return (
     <div>
-      <div className="relative aspect-square overflow-hidden rounded-[var(--radius-luxe)] border border-hairline bg-[linear-gradient(180deg,var(--stage-top),var(--stage-bottom))]">
+      <div
+        className="relative aspect-square overflow-hidden rounded-luxe border border-hairline bg-[linear-gradient(180deg,var(--stage-top),var(--stage-bottom))]"
+        onTouchStart={media.length > 1 ? onTouchStart : undefined}
+        onTouchEnd={media.length > 1 ? onTouchEnd : undefined}
+      >
         {badge && (
           <div className="absolute left-5 top-5 z-10">
             <Badge tone={badge}>{badge}</Badge>
           </div>
         )}
-        {current.type === "video" ? (
-          <video
-            src={current.src}
-            controls
-            autoPlay
-            playsInline
-            className="h-full w-full object-contain"
-          />
-        ) : (
-          <MagnifyImage src={current.src} alt={name} />
+
+        {/* Animated media layer */}
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={active}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: EASE }}
+            className="absolute inset-0"
+          >
+            {current.type === "video" ? (
+              <video
+                src={current.src}
+                controls
+                autoPlay
+                playsInline
+                className="h-full w-full object-contain"
+              />
+            ) : (
+              <MagnifyImage src={current.src} alt={name} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Prev / Next arrow controls */}
+        {media.length > 1 && (
+          <>
+            <button
+              onClick={() => go(-1)}
+              aria-label="Previous image"
+              className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-night/70 text-cream backdrop-blur-md transition-colors hover:border-gold/40 hover:text-gold"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={() => go(1)}
+              aria-label="Next image"
+              className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-night/70 text-cream backdrop-blur-md transition-colors hover:border-gold/40 hover:text-gold"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </>
         )}
       </div>
+
+      {/* Thumbnail strip */}
       {media.length > 1 && (
         <div className="mt-4 grid grid-cols-5 gap-3">
           {media.map((m, i) => (
             <button
               key={i}
-              onClick={() => setActive(i)}
+              onClick={() => {
+                setDirection(i > active ? 1 : -1);
+                setActive(i);
+              }}
               aria-label={m.type === "video" ? "Play video" : `View image ${i + 1}`}
               className={`relative aspect-square overflow-hidden rounded-xl border bg-cover bg-center transition-colors ${
                 active === i ? "border-gold" : "border-hairline hover:border-gold/40"

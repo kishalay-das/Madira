@@ -83,7 +83,7 @@
   --glass-light-bg: rgba(255, 255, 255, 0.03);
   --glass-light-border: rgba(255, 255, 255, 0.08);
   /* Navbar — clearer, more see-through glass with heavier frosting */
-  --nav-glass-bg: rgba(18, 18, 24, 0.32);
+  --nav-glass-bg: rgba(18, 18, 24, 0.55);
   --nav-glass-blur: blur(28px) saturate(160%);
 
   --hover-soft: rgba(255, 255, 255, 0.05);

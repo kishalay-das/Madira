@@ -80,7 +80,12 @@ export const products: Product[] = [
   {
     id: "p3",
     slug: "hibiki-harmony-master",
-    images: ["/bottles/hibiki-harmony-master.png"],
+    images: [
+      "/bottles/hibiki-harmony-master.png",
+      "/bottles/life/whiskey-1.jpg",
+      "/bottles/life/whiskey-2.jpg",
+      "/bottles/life/whiskey-3.jpg",
+    ],
     name: "Hibiki Harmony Master's Select",
     distillery: "Suntory",
     category: "whiskey",

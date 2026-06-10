@@ -55,12 +55,12 @@ export function Categories() {
               <div className="lux-texture absolute inset-0 opacity-50 mix-blend-overlay" />
 
               {/* Bottle imagery */}
-              <div className="pointer-events-none absolute bottom-0 right-[-12%] top-0 flex w-[58%] items-center justify-center">
+              <div className="pointer-events-none absolute bottom-0 right-[-2%] top-0 flex w-[46%] items-center justify-center sm:right-[-12%] sm:w-[58%]">
                 <div
                   className="absolute h-1/2 w-3/4 rounded-full blur-2xl transition-opacity duration-700 group-hover:opacity-90"
                   style={{ background: `radial-gradient(circle, ${c.hue}66, transparent 70%)`, opacity: 0.45 }}
                 />
-                <div className="relative h-[76%] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1 group-hover:scale-[1.08]">
+                <div className="relative h-[60%] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1 group-hover:scale-[1.08] sm:h-[76%]">
                   <Bottle
                     product={bottleFor[c.slug]}
                     className="drop-shadow-[0_24px_36px_rgba(0,0,0,0.5)]"

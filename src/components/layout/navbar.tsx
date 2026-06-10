@@ -191,7 +191,7 @@ export function Navbar() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           onMouseMove={handleMouseMove}
-          className="flex items-center gap-2 p-2 rounded-full border border-gold/15 transition-all duration-500 relative group hover:border-gold/30 hover:shadow-[0_0_30px_rgba(200,162,75,0.18)]"
+          className="flex items-center gap-2 p-2 rounded-full border border-gold/25 transition-all duration-500 relative group hover:border-gold/40 hover:shadow-[0_0_30px_rgba(200,162,75,0.18)]"
           style={{
             background: "var(--nav-glass-bg)",
             backdropFilter: "var(--nav-glass-blur)",
@@ -416,7 +416,7 @@ export function Navbar() {
 
       {/* 2. MOBILE VERSION (Sticky Header) */}
       <header
-        className="lg:hidden sticky top-0 z-50 w-full border-b border-gold/15 h-16 flex items-center justify-between px-4"
+        className="lg:hidden sticky top-0 z-50 w-full border-b border-gold/25 h-16 flex items-center justify-between px-4"
         style={{
           background: "var(--nav-glass-bg)",
           backdropFilter: "var(--nav-glass-blur)",

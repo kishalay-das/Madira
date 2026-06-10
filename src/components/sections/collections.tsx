@@ -160,10 +160,10 @@ function CollectionCard({
         className={cn(
           "pointer-events-none absolute bottom-0 top-0 flex items-center justify-center",
           isHero
-            ? "right-[-3%] w-[50%]"
+            ? "right-[-1%] w-[44%] sm:right-[-3%] sm:w-[50%]"
             : isWide
-            ? "right-[-2%] w-[42%]"
-            : "right-[-8%] w-[52%]"
+            ? "right-0 w-[38%] sm:right-[-2%] sm:w-[42%]"
+            : "right-[-1%] w-[46%] sm:right-[-8%] sm:w-[52%]"
         )}
       >
         {/* pedestal glow */}
@@ -174,7 +174,7 @@ function CollectionCard({
         <div
           className={cn(
             "relative transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1 group-hover:scale-[1.07]",
-            isHero ? "h-[86%]" : "h-[80%]"
+            isHero ? "h-[74%] sm:h-[86%]" : "h-[70%] sm:h-[80%]"
           )}
         >
           <Bottle

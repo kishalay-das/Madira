@@ -85,7 +85,7 @@ export function Footer() {
     <footer className="relative mt-32 border-t border-hairline bg-void/60">
       <div className="container-luxe py-16">
         {/* Newsletter */}
-        <div className="glass-dark mb-16 flex flex-col items-center gap-6 rounded-[var(--radius-luxe)] p-10 text-center md:flex-row md:justify-between md:text-left">
+        <div className="glass-dark mb-16 flex flex-col items-center gap-6 rounded-[var(--radius-luxe)] p-6 text-center sm:p-8 md:flex-row md:justify-between md:p-10 md:text-left">
           <div>
             <h3 className="font-display text-2xl text-cream md:text-3xl">
               Join the inner circle
@@ -94,13 +94,13 @@ export function Footer() {
               First access to allocated bottles, private tastings and member-only pricing.
             </p>
           </div>
-          <form className="flex w-full max-w-md items-center gap-2">
+          <form className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
             <input
               type="email"
               placeholder="Your email address"
-              className="h-12 flex-1 rounded-full border border-hairline bg-night/60 px-5 text-sm text-cream placeholder:text-muted-2 focus:border-gold focus:outline-none"
+              className="h-12 w-full shrink-0 rounded-full border border-hairline bg-night/60 px-5 text-sm text-cream placeholder:text-muted-2 focus:border-gold focus:outline-none sm:flex-1"
             />
-            <button className="h-12 shrink-0 rounded-full bg-gradient-to-b from-gold-bright to-gold px-6 text-sm font-medium text-ink transition-shadow hover:shadow-[0_14px_30px_-12px_rgba(200,162,75,0.7)]">
+            <button className="h-12 w-full shrink-0 rounded-full bg-gradient-to-b from-gold-bright to-gold px-6 text-sm font-medium text-ink transition-shadow hover:shadow-[0_14px_30px_-12px_rgba(200,162,75,0.7)] sm:w-auto">
               Subscribe
             </button>
           </form>
