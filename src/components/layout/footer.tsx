@@ -151,9 +151,9 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 text-xs text-muted md:flex-row">
           <p>© {new Date().getFullYear()} Nocturne Spirits. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link href="/" className="hover:text-cream">Privacy</Link>
-            <Link href="/" className="hover:text-cream">Terms</Link>
-            <Link href="/" className="hover:text-cream">Cookies</Link>
+            <Link href="/privacy" className="hover:text-cream">Privacy</Link>
+            <Link href="/terms" className="hover:text-cream">Terms</Link>
+            <Link href="/cookies" className="hover:text-cream">Cookies</Link>
             <span className="rounded-full border border-hairline px-3 py-1 text-[0.65rem] uppercase tracking-widest text-gold">
               Please drink responsibly · 21+
             </span>
