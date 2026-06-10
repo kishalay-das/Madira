@@ -51,10 +51,10 @@ npm install                   # also runs `prisma generate`
 npm run db:migrate            # create tables
 npm run db:seed               # catalog + demo users + coupons
 npm run dev
-# open http://localhost:3000  ·  sign in with the demo accounts below
+# open http://localhost:3000
 ```
 
-See **Backend** below for demo credentials and the full API. Production build:
+See **Backend** below for the full API. Production build:
 
 ```bash
 npm run build && npm start
@@ -93,12 +93,8 @@ npm run dev
 
 Helper scripts: `db:migrate`, `db:seed`, `db:reset`, `db:studio`.
 
-### Demo accounts (seeded)
-
-| Role     | Email                 | Password    |
-| -------- | --------------------- | ----------- |
-| Admin    | `admin@nocturne.club` | `nocturne8` |
-| Customer | `demo@nocturne.club`  | `nocturne8` |
+The seed creates an admin and a customer account. Their credentials are defined
+in [`prisma/seed.ts`](prisma/seed.ts) — change them before any public deployment.
 
 ### Authentication
 

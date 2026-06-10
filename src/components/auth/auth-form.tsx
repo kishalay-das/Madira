@@ -143,12 +143,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             </>
           )}
         </p>
-
-        {!isRegister && (
-          <p className="mt-4 rounded-lg border border-hairline bg-night/40 px-4 py-3 text-center text-[0.7rem] text-muted">
-            Demo · admin@nocturne.club / nocturne8 &nbsp;·&nbsp; demo@nocturne.club / nocturne8
-          </p>
-        )}
       </div>
     </div>
   );
