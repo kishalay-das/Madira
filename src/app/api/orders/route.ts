@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 const FREE_SHIPPING = 150;
 const SHIPPING_FEE = 12;
 const GIFT_FEE = 9;
+const COD_FEE = 1; // cash-on-delivery handling surcharge
 const TAX_RATE = 0.08;
 
 const orderSchema = z.object({
@@ -14,6 +15,7 @@ const orderSchema = z.object({
     .min(1),
   deliverySlot: z.enum(["priority", "standard", "scheduled"]).default("standard"),
   giftWrap: z.boolean().default(false),
+  paymentMethod: z.enum(["card", "wallet", "cod"]).default("card"),
   couponCode: z.string().trim().max(40).optional(),
   addressId: z.string().optional(),
 });
@@ -43,9 +45,10 @@ export async function POST(request: Request) {
       { status: 422 }
     );
   }
-  const { items, deliverySlot, giftWrap, couponCode, addressId } = parsed.data;
+  const { items, deliverySlot, giftWrap, paymentMethod, couponCode, addressId } =
+    parsed.data;
 
-  // Validate the address belongs to this user (if supplied).
+  // A delivery address is required, and must belong to this user.
   let validAddressId: string | null = null;
   if (addressId) {
     const addr = await prisma.address.findFirst({
@@ -53,6 +56,12 @@ export async function POST(request: Request) {
       select: { id: true },
     });
     validAddressId = addr?.id ?? null;
+  }
+  if (!validAddressId) {
+    return NextResponse.json(
+      { error: "A delivery address is required to place an order." },
+      { status: 422 }
+    );
   }
 
   // Recompute everything from the DB — never trust client prices.
@@ -97,8 +106,9 @@ export async function POST(request: Request) {
   const discounted = subtotal - discount;
   const shipping = discounted >= FREE_SHIPPING ? 0 : SHIPPING_FEE;
   const giftFee = giftWrap ? GIFT_FEE : 0;
+  const codFee = paymentMethod === "cod" ? COD_FEE : 0;
   const tax = +(discounted * TAX_RATE).toFixed(2);
-  const total = +(discounted + shipping + giftFee + tax).toFixed(2);
+  const total = +(discounted + shipping + giftFee + tax + codFee).toFixed(2);
 
   const number = `NOC-${100000 + Math.floor(Math.random() * 899999)}`;
 
@@ -111,9 +121,11 @@ export async function POST(request: Request) {
         status: "PROCESSING",
         deliverySlot: slotMap[deliverySlot],
         giftWrap,
+        paymentMethod,
         subtotal,
         discount,
         shipping,
+        codFee,
         tax,
         total,
         couponId,
@@ -151,6 +163,8 @@ export async function POST(request: Request) {
         discount,
         shipping,
         giftFee,
+        codFee,
+        paymentMethod,
         tax,
         total,
       },

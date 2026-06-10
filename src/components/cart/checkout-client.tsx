@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  Banknote,
   CalendarClock,
   CheckCircle2,
   CreditCard,
@@ -14,6 +15,8 @@ import {
   Trash2,
   Wallet,
 } from "lucide-react";
+
+const COD_FEE = 1; // cash-on-delivery handling surcharge
 import { formatPrice } from "@/lib/utils";
 import { Bottle } from "@/components/bottle";
 import { Button } from "@/components/ui/button";
@@ -58,6 +61,45 @@ export function CheckoutClient({
   const [addressId, setAddressId] = useState<string | null>(
     addresses.find((a) => a.primary)?.id ?? addresses[0]?.id ?? null
   );
+  const [addingAddr, setAddingAddr] = useState(addresses.length === 0);
+  const [savingAddr, setSavingAddr] = useState(false);
+  const [addrErr, setAddrErr] = useState<string | null>(null);
+  const [newAddr, setNewAddr] = useState({
+    label: "Home",
+    line1: "",
+    city: "",
+    postalCode: "",
+  });
+
+  async function saveAddress(e: React.FormEvent) {
+    e.preventDefault();
+    setAddrErr(null);
+    setSavingAddr(true);
+    try {
+      const res = await fetch("/api/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...newAddr, isPrimary: addresses.length === 0 }),
+      });
+      if (res.status === 401) {
+        router.push("/login?callbackUrl=/cart");
+        return;
+      }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Could not save address.");
+      }
+      const data = await res.json();
+      setAddressId(data.address.id);
+      setAddingAddr(false);
+      setNewAddr({ label: "Home", line1: "", city: "", postalCode: "" });
+      router.refresh();
+    } catch (err) {
+      setAddrErr(err instanceof Error ? err.message : "Could not save address.");
+    } finally {
+      setSavingAddr(false);
+    }
+  }
 
   const sub = subtotal();
   const discount = coupon
@@ -69,8 +111,9 @@ export function CheckoutClient({
     : 0;
   const shipping = sub - discount >= FREE_SHIPPING || sub === 0 ? 0 : 12;
   const giftFee = gift ? 9 : 0;
+  const codFee = payment === "cod" ? COD_FEE : 0;
   const tax = (sub - discount) * 0.08;
-  const total = sub - discount + shipping + giftFee + tax;
+  const total = sub - discount + shipping + giftFee + tax + codFee;
 
   async function applyCoupon() {
     const code = promo.trim();
@@ -105,6 +148,10 @@ export function CheckoutClient({
 
   async function placeOrder() {
     setError(null);
+    if (isAuthed && !addressId) {
+      setError("Please add or select a delivery address before placing your order.");
+      return;
+    }
     setPlacing(true);
     try {
       const res = await fetch("/api/orders", {
@@ -114,6 +161,7 @@ export function CheckoutClient({
           items: items.map((i) => ({ slug: i.product.slug, qty: i.qty })),
           deliverySlot: slot,
           giftWrap: gift,
+          paymentMethod: payment,
           couponCode: coupon?.code,
           addressId: addressId ?? undefined,
         }),
@@ -207,56 +255,107 @@ export function CheckoutClient({
           </button>
         </Section>
 
-        {/* Delivery address */}
+        {/* Delivery address — required */}
         <Section title="Delivery Address">
-          {addresses.length > 0 ? (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {addresses.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() => setAddressId(a.id)}
-                    className={`rounded-2xl border p-4 text-left transition-all ${
-                      addressId === a.id
-                        ? "border-gold bg-gold/10"
-                        : "border-hairline hover:border-gold/40"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-display text-cream">{a.label}</span>
-                      {a.primary && (
-                        <span className="rounded-full border border-gold/30 px-2 py-0.5 text-[0.55rem] uppercase tracking-widest text-gold">
-                          Primary
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs leading-relaxed text-muted">{a.line}</p>
-                  </button>
-                ))}
-              </div>
-              <Link
-                href="/account"
-                className="inline-block text-xs uppercase tracking-[0.18em] text-gold hover:text-gold-bright"
-              >
-                + Manage addresses
-              </Link>
-            </div>
-          ) : isAuthed ? (
-            <div className="rounded-2xl border border-dashed border-hairline bg-night/30 p-6 text-center">
-              <p className="text-sm text-muted">You have no saved addresses yet.</p>
-              <Button href="/account" variant="outline" size="sm" className="mt-3">
-                Add a delivery address
-              </Button>
-            </div>
-          ) : (
+          {!isAuthed ? (
             <div className="rounded-2xl border border-dashed border-hairline bg-night/30 p-6 text-center">
               <p className="text-sm text-muted">
-                Sign in to use your saved addresses and place your order.
+                Sign in to add a delivery address and place your order.
               </p>
               <Button href="/login?callbackUrl=/cart" variant="gold" size="sm" className="mt-3">
                 Sign in
               </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {addresses.length > 0 && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {addresses.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => setAddressId(a.id)}
+                      className={`rounded-2xl border p-4 text-left transition-all ${
+                        addressId === a.id
+                          ? "border-gold bg-gold/10"
+                          : "border-hairline hover:border-gold/40"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-display text-cream">{a.label}</span>
+                        {a.primary && (
+                          <span className="rounded-full border border-gold/30 px-2 py-0.5 text-[0.55rem] uppercase tracking-widest text-gold">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-muted">{a.line}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {addingAddr ? (
+                <form
+                  onSubmit={saveAddress}
+                  className="space-y-3 rounded-2xl border border-hairline bg-night/40 p-4"
+                >
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field
+                      label="Label"
+                      placeholder="Home"
+                      value={newAddr.label}
+                      onChange={(v) => setNewAddr((p) => ({ ...p, label: v }))}
+                      required
+                    />
+                    <Field
+                      label="Street address"
+                      placeholder="1 Park Avenue"
+                      value={newAddr.line1}
+                      onChange={(v) => setNewAddr((p) => ({ ...p, line1: v }))}
+                      required
+                    />
+                    <Field
+                      label="City"
+                      placeholder="New York"
+                      value={newAddr.city}
+                      onChange={(v) => setNewAddr((p) => ({ ...p, city: v }))}
+                      required
+                    />
+                    <Field
+                      label="Postal code"
+                      placeholder="10016"
+                      value={newAddr.postalCode}
+                      onChange={(v) => setNewAddr((p) => ({ ...p, postalCode: v }))}
+                      required
+                    />
+                  </div>
+                  {addrErr && <p className="text-xs text-burgundy">{addrErr}</p>}
+                  <div className="flex items-center gap-2">
+                    <Button type="submit" variant="gold" size="sm" disabled={savingAddr}>
+                      {savingAddr && <Loader2 size={14} className="animate-spin" />}
+                      Save address
+                    </Button>
+                    {addresses.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setAddingAddr(false)}
+                        className="text-xs uppercase tracking-[0.16em] text-muted hover:text-cream"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAddingAddr(true)}
+                  className="rounded-full border border-gold/40 px-4 py-2 text-xs uppercase tracking-[0.18em] text-gold transition-colors hover:bg-gold/10"
+                >
+                  + Add a new address
+                </button>
+              )}
             </div>
           )}
         </Section>
@@ -291,7 +390,7 @@ export function CheckoutClient({
             {[
               { id: "card", label: "Credit Card", Icon: CreditCard },
               { id: "wallet", label: "Apple / Google Pay", Icon: Wallet },
-              { id: "crypto", label: "Pay on Delivery", Icon: Gift },
+              { id: "cod", label: "Cash on Delivery", Icon: Banknote },
             ].map(({ id, label, Icon }) => (
               <button
                 key={id}
@@ -310,6 +409,17 @@ export function CheckoutClient({
               <Field label="Card number" placeholder="4242 4242 4242 4242" className="sm:col-span-2" />
               <Field label="Expiry" placeholder="12 / 28" />
               <Field label="CVC" placeholder="123" />
+            </div>
+          )}
+          {payment === "cod" && (
+            <div className="mt-4 flex items-start gap-3 rounded-2xl border border-gold/30 bg-gold/5 p-4">
+              <Banknote size={18} className="mt-0.5 shrink-0 text-gold" />
+              <p className="text-sm text-parchment">
+                Pay in <span className="text-cream">cash</span> when your order arrives —
+                no card or online payment needed. A{" "}
+                <span className="text-gold">{formatPrice(COD_FEE)}</span> handling fee
+                applies. ID verified on delivery (21+).
+              </p>
             </div>
           )}
         </Section>
@@ -360,6 +470,7 @@ export function CheckoutClient({
             {discount > 0 && <Row label="Discount" value={`−${formatPrice(discount)}`} accent />}
             <Row label="Delivery" value={shipping === 0 ? "Complimentary" : formatPrice(shipping)} />
             {gift && <Row label="Gift wrapping" value={formatPrice(giftFee)} />}
+            {codFee > 0 && <Row label="Cash on delivery" value={formatPrice(codFee)} />}
             <Row label="Estimated tax" value={formatPrice(tax)} />
             <div className="flex items-center justify-between border-t border-hairline pt-4">
               <span className="text-cream">Total</span>
@@ -377,11 +488,16 @@ export function CheckoutClient({
             size="lg"
             className="mt-6 w-full"
             onClick={placeOrder}
-            disabled={placing}
+            disabled={placing || (isAuthed && !addressId)}
           >
             {placing && <Loader2 size={16} className="animate-spin" />}
             Place Order · {formatPrice(total)}
           </Button>
+          {isAuthed && !addressId && (
+            <p className="mt-2 text-center text-xs text-muted">
+              Add a delivery address above to place your order.
+            </p>
+          )}
           <p className="mt-3 text-center text-[0.7rem] text-muted">
             🔒 Encrypted &amp; secure · ID verified on delivery (21+) · Sign-in required
           </p>
@@ -404,16 +520,25 @@ function Field({
   label,
   placeholder,
   className = "",
+  value,
+  onChange,
+  required,
 }: {
   label: string;
   placeholder: string;
   className?: string;
+  value?: string;
+  onChange?: (v: string) => void;
+  required?: boolean;
 }) {
   return (
     <label className={`block ${className}`}>
       <span className="mb-1.5 block text-[0.62rem] uppercase tracking-widest text-muted">{label}</span>
       <input
         placeholder={placeholder}
+        value={value}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        required={required}
         className="h-11 w-full rounded-xl border border-hairline bg-night/60 px-4 text-sm text-cream placeholder:text-muted-2 focus:border-gold focus:outline-none"
       />
     </label>
