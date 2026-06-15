@@ -51,10 +51,12 @@ interface AdminData {
     palette: { glass: string; liquid: string; label: string };
     category: string;
     images?: string[];
+    segment: string;
   }[];
   orders: {
     id: string;
     number: string;
+    segment: string;
     customer: string;
     customerEmail: string;
     total: number;
@@ -289,11 +291,43 @@ function Dashboard({ data }: { data: AdminData }) {
   );
 }
 
+function SegmentToggle({
+  value,
+  onChange,
+  counts,
+}: {
+  value: "PREMIUM" | "STANDARD";
+  onChange: (s: "PREMIUM" | "STANDARD") => void;
+  counts: { PREMIUM: number; STANDARD: number };
+}) {
+  return (
+    <div className="inline-flex rounded-full border border-hairline bg-night/40 p-1">
+      {(["PREMIUM", "STANDARD"] as const).map((s) => (
+        <button
+          key={s}
+          onClick={() => onChange(s)}
+          className={`rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-[0.12em] transition-colors ${
+            value === s ? "bg-gold text-ink" : "text-muted hover:text-cream"
+          }`}
+        >
+          {s === "PREMIUM" ? "Premium" : "Standard"} ({counts[s]})
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function Products({ data }: { data: AdminData }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
   const [modal, setModal] = useState<"create" | Product | null>(null);
+  const [seg, setSeg] = useState<"PREMIUM" | "STANDARD">("PREMIUM");
+  const counts = {
+    PREMIUM: data.products.filter((p) => p.segment === "PREMIUM").length,
+    STANDARD: data.products.filter((p) => p.segment === "STANDARD").length,
+  };
+  const shown = data.products.filter((p) => p.segment === seg);
 
   async function remove(id: string) {
     if (!confirm("Delete this product?")) return;
@@ -334,9 +368,14 @@ function Products({ data }: { data: AdminData }) {
         </button>
       </div>
 
+      <SegmentToggle value={seg} onChange={setSeg} counts={counts} />
+
       <Panel className="!p-0 overflow-hidden">
         <div className="divide-y divide-[color:var(--color-hairline)]">
-          {data.products.map((p) => (
+          {shown.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted">No {seg.toLowerCase()} products.</p>
+          ) : null}
+          {shown.map((p) => (
             <div key={p.id} className="flex items-center gap-3 p-4 hover:bg-[var(--hover-soft)]">
               <div className="h-12 w-9 shrink-0">
                 <Bottle product={{ ...p, category: p.category as CategorySlug, distillery: p.distillery }} />
@@ -858,6 +897,7 @@ function Orders({ data }: { data: AdminData }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [detail, setDetail] = useState<AdminOrder | null>(null);
+  const [seg, setSeg] = useState<"PREMIUM" | "STANDARD">("PREMIUM");
 
   async function setStatus(id: string, status: string) {
     setBusy(id);
@@ -872,16 +912,22 @@ function Orders({ data }: { data: AdminData }) {
 
   // Keep the open detail view in sync after a status change / refresh.
   const live = detail ? data.orders.find((o) => o.id === detail.id) ?? null : null;
+  const counts = {
+    PREMIUM: data.orders.filter((o) => o.segment === "PREMIUM").length,
+    STANDARD: data.orders.filter((o) => o.segment === "STANDARD").length,
+  };
+  const shown = data.orders.filter((o) => o.segment === seg);
 
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl text-cream sm:text-3xl">Orders</h1>
+      <SegmentToggle value={seg} onChange={setSeg} counts={counts} />
       <Panel className="!p-0 overflow-hidden">
-        {data.orders.length === 0 ? (
-          <p className="p-8 text-center text-sm text-muted">No orders yet.</p>
+        {shown.length === 0 ? (
+          <p className="p-8 text-center text-sm text-muted">No {seg.toLowerCase()} orders.</p>
         ) : (
           <div className="divide-y divide-[color:var(--color-hairline)]">
-            {data.orders.map((o) => (
+            {shown.map((o) => (
               <div key={o.id} className="flex flex-wrap items-center gap-3 p-4 hover:bg-[var(--hover-soft)]">
                 <button
                   onClick={() => setDetail(o)}

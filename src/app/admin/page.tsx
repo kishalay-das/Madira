@@ -50,7 +50,7 @@ export default async function AdminPage() {
         user: { select: { name: true, email: true } },
         address: true,
         coupon: { select: { code: true } },
-        items: { include: { product: { select: { name: true, slug: true } } } },
+        items: { include: { product: { select: { name: true, slug: true, segment: true } } } },
       },
       orderBy: { createdAt: "desc" },
       take: 25,
@@ -139,10 +139,14 @@ export default async function AdminPage() {
             label: p.paletteLabel,
           },
           category: p.category?.slug ?? "whiskey",
+          segment: p.segment === "STANDARD" ? "STANDARD" : "PREMIUM",
         })),
         orders: orders.map((o) => ({
           id: o.id,
           number: o.number,
+          segment: o.items.some((it) => it.product?.segment === "STANDARD")
+            ? "STANDARD"
+            : "PREMIUM",
           customer: o.user?.name ?? o.user?.email ?? "Guest",
           customerEmail: o.user?.email ?? "",
           total: Number(o.total),

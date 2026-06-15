@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 /* Brand glyphs (lucide dropped brand icons, so we inline minimal marks) */
 function IgIcon({ size = 16 }: { size?: number }) {
@@ -81,6 +84,9 @@ const socials = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <footer className="relative mt-32 border-t border-hairline bg-void/60">
       <div className="container-luxe py-16">
