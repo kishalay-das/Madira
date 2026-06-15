@@ -38,7 +38,7 @@ export function Bottle({ product, className, sizes, procedural }: BottleProps) {
   // often the roughest); fall back to the first, then the procedural bottle.
   const img = procedural
     ? undefined
-    : product.images?.[1] ?? product.images?.[0];
+    : product.images?.[0] ?? product.images?.[1];
   if (img) {
     return (
       <span
