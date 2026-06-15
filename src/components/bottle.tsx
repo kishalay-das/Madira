@@ -34,11 +34,8 @@ const silhouetteFor: Record<CategorySlug, Silhouette> = {
 };
 
 export function Bottle({ product, className, sizes, procedural }: BottleProps) {
-  // Prefer the 2nd photo when a product has several (the lead cut-out is
-  // often the roughest); fall back to the first, then the procedural bottle.
-  const img = procedural
-    ? undefined
-    : product.images?.[0] ?? product.images?.[1];
+  // Use the first image (the bottle cover); fall back to the procedural bottle.
+  const img = procedural ? undefined : product.images?.[0];
   if (img) {
     return (
       <span
