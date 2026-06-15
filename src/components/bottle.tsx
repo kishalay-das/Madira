@@ -15,6 +15,8 @@ interface BottleProps {
   >;
   className?: string;
   sizes?: string;
+  /** Force the procedural SVG bottle even when the product has a photo. */
+  procedural?: boolean;
 }
 
 type Silhouette = "tall" | "wine" | "flute" | "squat" | "box";
@@ -31,8 +33,12 @@ const silhouetteFor: Record<CategorySlug, Silhouette> = {
   "gift-boxes": "box",
 };
 
-export function Bottle({ product, className, sizes }: BottleProps) {
-  const img = product.images?.[0];
+export function Bottle({ product, className, sizes, procedural }: BottleProps) {
+  // Prefer the 2nd photo when a product has several (the lead cut-out is
+  // often the roughest); fall back to the first, then the procedural bottle.
+  const img = procedural
+    ? undefined
+    : product.images?.[1] ?? product.images?.[0];
   if (img) {
     return (
       <span

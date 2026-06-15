@@ -5,6 +5,7 @@ import type {
   Product,
   Review,
 } from "./types";
+import { standardProducts } from "./standard-data";
 
 export const categories: Category[] = [
   { slug: "whiskey", name: "Whiskey", tagline: "Single malts & rare casks", hue: "#b5712f", count: 184 },
@@ -366,8 +367,19 @@ export const products: Product[] = [
   },
 ];
 
+/** Standard storefront catalog (everyday bottles) — kept separate from premium. */
+export { standardProducts };
+
+/** Premium + standard combined — used for slug lookups and DB seeding. */
+export const allProducts: Product[] = [...products, ...standardProducts];
+
 export const bestSellers = products.filter((p) =>
   ["p2", "p3", "p5", "p7", "p1", "p8"].includes(p.id)
+);
+
+/** Top everyday picks for the standard storefront. */
+export const standardBestSellers = standardProducts.filter((p) =>
+  p.badge === "Best Seller"
 );
 
 export const collections: Collection[] = [
@@ -450,12 +462,15 @@ export const reviews: Review[] = [
 ];
 
 export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
+  return allProducts.find((p) => p.slug === slug);
 }
 
 export function relatedProducts(product: Product) {
-  return products
+  // Stay within the same storefront segment as the product.
+  const segment = product.segment ?? "PREMIUM";
+  const pool = allProducts.filter((p) => (p.segment ?? "PREMIUM") === segment);
+  return pool
     .filter((p) => p.category === product.category && p.id !== product.id)
-    .concat(products.filter((p) => p.category !== product.category))
+    .concat(pool.filter((p) => p.category !== product.category && p.id !== product.id))
     .slice(0, 4);
 }

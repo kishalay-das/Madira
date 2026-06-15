@@ -1,3 +1,5 @@
+import { getMode } from "@/lib/mode";
+import { StandardHome } from "@/components/sections/standard-home";
 import { Hero } from "@/components/sections/hero";
 import { Categories } from "@/components/sections/categories";
 import { BestSellers } from "@/components/sections/best-sellers";
@@ -8,7 +10,11 @@ import { Membership } from "@/components/sections/membership";
 import { Reviews } from "@/components/sections/reviews";
 import { AppPromo } from "@/components/sections/app-promo";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const mode = await getMode();
+  if (mode === "standard") return <StandardHome />;
   return (
     <>
       <Hero />

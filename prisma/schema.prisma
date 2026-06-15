@@ -93,6 +93,7 @@ model Product {
   reviewsCount  Int      @default(0)
   stock         Int      @default(0)
   badge         String?
+  segment       String   @default("PREMIUM") // PREMIUM | STANDARD storefront
   tags          String[]
   notes         String[]
   pairings      String[]
@@ -112,6 +113,7 @@ model Product {
 
   @@index([categoryId])
   @@index([slug])
+  @@index([segment])
 }
 
 model Address {

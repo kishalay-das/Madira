@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { categories } from "@/lib/data";
 import { useCart } from "@/store/cart";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { ModeToggle } from "@/components/mode/mode-toggle";
 import { SearchOverlay } from "./search-overlay";
 
 const links = [
@@ -155,6 +156,9 @@ export function Navbar() {
     });
   };
 
+  // The admin console has its own chrome — hide the storefront navbar there.
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <>
       {/* Announcement bar — gracefully collapses on scroll */}
@@ -286,6 +290,7 @@ export function Navbar() {
             className="ml-2 flex items-center gap-1 backdrop-blur-md rounded-full p-1.5 border border-gold/15 relative z-10 transition-all duration-300"
             style={{ background: "rgba(200, 162, 75, 0.04)" }}
           >
+            <ModeToggle size="sm" />
             <ThemeToggle className="border-none hover:bg-white/10 text-cream/70 hover:text-cream" />
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -527,6 +532,11 @@ export function Navbar() {
                     </li>
                   ))}
                 </ul>
+
+                <p className="eyebrow mt-8">Storefront</p>
+                <div className="mt-4">
+                  <ModeToggle size="full" />
+                </div>
 
                 <p className="eyebrow mt-8">Appearance</p>
                 <div className="mt-4">

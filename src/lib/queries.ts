@@ -47,8 +47,11 @@ function toProduct(p: DbProductWithCategory): Product {
     description: p.description,
     badge: (p.badge ?? undefined) as Product["badge"],
     stock: p.stock,
+    segment: (p.segment as Product["segment"]) ?? "PREMIUM",
   };
 }
+
+export type Segment = "PREMIUM" | "STANDARD";
 
 function toCategory(c: DbCategory): Category {
   return {
@@ -76,6 +79,8 @@ export interface ProductQuery {
   q?: string;
   sort?: ProductSort;
   limit?: number;
+  /** Storefront segment to show. Defaults to PREMIUM. */
+  segment?: Segment;
 }
 
 const orderByFor = (sort?: ProductSort) => {
@@ -96,6 +101,7 @@ const orderByFor = (sort?: ProductSort) => {
 export async function getProducts(opts: ProductQuery = {}): Promise<Product[]> {
   const rows = await prisma.product.findMany({
     where: {
+      segment: opts.segment ?? "PREMIUM",
       ...(opts.category ? { category: { slug: opts.category } } : {}),
       ...(opts.q
         ? {
@@ -130,8 +136,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function getRelatedProducts(product: Product): Promise<Product[]> {
+  const segment = product.segment ?? "PREMIUM";
   const sameCategory = await prisma.product.findMany({
-    where: { category: { slug: product.category }, NOT: { id: product.id } },
+    where: { segment, category: { slug: product.category }, NOT: { id: product.id } },
     include: { category: true },
     take: 4,
   });
@@ -139,6 +146,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
 
   const fill = await prisma.product.findMany({
     where: {
+      segment,
       NOT: { id: { in: [product.id, ...sameCategory.map((p) => p.id)] } },
     },
     include: { category: true },

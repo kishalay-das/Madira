@@ -46,6 +46,8 @@ export interface Product {
   description: string;
   badge?: "Best Seller" | "Limited" | "New" | "Rare" | "Award Winner";
   stock: number;
+  /* which storefront this product belongs to (defaults to premium) */
+  segment?: "PREMIUM" | "STANDARD";
 }
 
 export interface Collection {

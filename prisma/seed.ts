@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { categories, products } from "../src/lib/data";
+import { categories, allProducts as products } from "../src/lib/data";
 
 const prisma = new PrismaClient();
 
@@ -78,6 +78,8 @@ async function main() {
         distillery: p.distillery,
         description: p.description,
         images: p.images ?? [],
+        video: p.video ?? null,
+        segment: p.segment ?? "PREMIUM",
         categoryId: categoryId[p.category],
         categoryLabel: p.categoryLabel,
         price: p.price,

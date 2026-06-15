@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider, themeInitScript } from "@/components/theme/theme-provider";
+import { ModeProvider, modeInitScript } from "@/components/mode/mode-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -69,14 +70,17 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: modeInitScript }} />
       </head>
       <body className="min-h-full">
         <SessionProvider>
           <ThemeProvider>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-            <CartDrawer />
+            <ModeProvider>
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+              <CartDrawer />
+            </ModeProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>
