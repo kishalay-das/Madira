@@ -43,6 +43,7 @@ export default async function AdminPage() {
     orderCount,
     customerCount,
     cats,
+    analyticsOrders,
   ] = await Promise.all([
     prisma.product.findMany({ include: { category: true }, orderBy: { createdAt: "asc" } }),
     prisma.order.findMany({
@@ -101,6 +102,23 @@ export default async function AdminPage() {
       },
       orderBy: { name: "asc" },
     }),
+    // Lightweight slice for dashboard analytics (trends, segment split,
+    // best sellers). Capped so the query stays cheap on large catalogs.
+    prisma.order.findMany({
+      select: {
+        total: true,
+        createdAt: true,
+        items: {
+          select: {
+            quantity: true,
+            unitPrice: true,
+            product: { select: { name: true, slug: true, segment: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    }),
   ]);
 
   const revenue = Number(revenueAgg._sum.total ?? 0);
@@ -114,6 +132,72 @@ export default async function AdminPage() {
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 5);
 
+  /* ---- Dashboard analytics (derived from the analytics order slice) ---- */
+  const DAY = 86_400_000;
+  const now = Date.now();
+  const segmentOf = (its: { product: { segment: string } | null }[]) =>
+    its.some((it) => it.product?.segment === "STANDARD") ? "STANDARD" : "PREMIUM";
+
+  // 14-day revenue + order-count sparkline series (index 0 = 13 days ago).
+  const revenueByDay = Array.from({ length: 14 }, () => 0);
+  const ordersByDay = Array.from({ length: 14 }, () => 0);
+  // Revenue attributed per storefront segment.
+  const revenueBySegment = { PREMIUM: 0, STANDARD: 0 };
+  // 30-day rolling windows for trend deltas.
+  let revThis = 0;
+  let revPrev = 0;
+  let ordThis = 0;
+  let ordPrev = 0;
+  // Best sellers by units.
+  const productAgg = new Map<
+    string,
+    { name: string; slug: string; units: number; revenue: number; segment: string }
+  >();
+
+  for (const o of analyticsOrders) {
+    const total = Number(o.total);
+    const ts = o.createdAt.getTime();
+    const ageDays = Math.floor((now - ts) / DAY);
+
+    revenueBySegment[segmentOf(o.items)] += total;
+
+    if (ageDays < 14) {
+      const idx = 13 - ageDays;
+      revenueByDay[idx] += total;
+      ordersByDay[idx] += 1;
+    }
+    if (ageDays < 30) {
+      revThis += total;
+      ordThis += 1;
+    } else if (ageDays < 60) {
+      revPrev += total;
+      ordPrev += 1;
+    }
+
+    for (const it of o.items) {
+      if (!it.product) continue;
+      const key = it.product.slug;
+      const prev = productAgg.get(key) ?? {
+        name: it.product.name,
+        slug: it.product.slug,
+        units: 0,
+        revenue: 0,
+        segment: it.product.segment === "STANDARD" ? "STANDARD" : "PREMIUM",
+      };
+      prev.units += it.quantity;
+      prev.revenue += it.quantity * Number(it.unitPrice);
+      productAgg.set(key, prev);
+    }
+  }
+
+  const pctDelta = (cur: number, prev: number) =>
+    prev > 0 ? Math.round(((cur - prev) / prev) * 100) : cur > 0 ? 100 : 0;
+  const revenueTrend = pctDelta(revThis, revPrev);
+  const ordersTrend = pctDelta(ordThis, ordPrev);
+  const topProducts = [...productAgg.values()]
+    .sort((a, b) => b.units - a.units)
+    .slice(0, 6);
+
   return (
     <AdminClient
       data={{
@@ -122,7 +206,13 @@ export default async function AdminPage() {
           orders: orderCount,
           customers: customerCount,
           aov: orderCount ? revenue / orderCount : 0,
+          revenueTrend,
+          ordersTrend,
         },
+        revenueByDay,
+        ordersByDay,
+        revenueBySegment,
+        topProducts,
         topCategories,
         products: products.map((p) => ({
           id: p.id,
@@ -161,6 +251,7 @@ export default async function AdminPage() {
           codFee: Number(o.codFee),
           giftWrap: o.giftWrap,
           date: fmtDate(o.createdAt),
+          createdAt: o.createdAt.toISOString(),
           couponCode: o.coupon?.code ?? null,
           address: o.address ? oneLineAddress(o.address) : null,
           items: o.items.map((it) => ({
@@ -171,30 +262,48 @@ export default async function AdminPage() {
           })),
         })),
         customers: customers
-          .map((c) => ({
-            id: c.id,
-            name: c.name ?? "Member",
-            email: c.email,
-            tier: titleCase(c.tier),
-            loyaltyPoints: c.loyaltyPoints,
-            referralCode: c.referralCode,
-            memberSince: fmtMonth(c.createdAt),
-            orders: c.orders.length,
-            spend: c.orders.reduce((s, o) => s + Number(o.total), 0),
-            addresses: c.addresses.map((a) => ({
-              label: a.label,
-              line: oneLineAddress(a),
-            })),
-            recentOrders: [...c.orders]
-              .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-              .slice(0, 8)
-              .map((o) => ({
+          .map((c) => {
+            const sorted = [...c.orders].sort(
+              (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+            );
+            const orderCount = c.orders.length;
+            const spend = c.orders.reduce((s, o) => s + Number(o.total), 0);
+            const aov = orderCount ? spend / orderCount : 0;
+            const last = sorted[0]?.createdAt ?? null;
+            const daysSinceLast = last ? (now - last.getTime()) / DAY : null;
+
+            // Derived insight tags for at-a-glance segmentation.
+            const tags: string[] = [];
+            if (orderCount === 0) tags.push("New");
+            if (spend >= 1000) tags.push("VIP");
+            else if (spend >= 400) tags.push("High spender");
+            if (daysSinceLast != null && daysSinceLast > 90) tags.push("At risk");
+
+            return {
+              id: c.id,
+              name: c.name ?? "Member",
+              email: c.email,
+              tier: titleCase(c.tier),
+              loyaltyPoints: c.loyaltyPoints,
+              referralCode: c.referralCode,
+              memberSince: fmtMonth(c.createdAt),
+              orders: orderCount,
+              spend,
+              aov,
+              lastPurchase: last ? fmtDate(last) : null,
+              tags,
+              addresses: c.addresses.map((a) => ({
+                label: a.label,
+                line: oneLineAddress(a),
+              })),
+              recentOrders: sorted.slice(0, 8).map((o) => ({
                 number: o.number,
                 total: Number(o.total),
                 statusLabel: titleCase(o.status),
                 date: fmtDate(o.createdAt),
               })),
-          }))
+            };
+          })
           .sort((a, b) => b.spend - a.spend),
         coupons: coupons.map((c) => ({
           id: c.id,
