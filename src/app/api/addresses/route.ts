@@ -7,9 +7,16 @@ const schema = z.object({
   label: z.string().min(1).max(40),
   line1: z.string().min(2).max(120),
   line2: z.string().max(120).optional(),
+  landmark: z.string().max(120).optional(),
   city: z.string().min(1).max(80),
   postalCode: z.string().min(1).max(20),
   country: z.string().max(60).default("US"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+()\-\s]{6,20}$/, "Enter a valid phone number.")
+    .optional()
+    .or(z.literal("")),
   isPrimary: z.boolean().default(false),
 });
 
@@ -31,8 +38,15 @@ export async function POST(request: Request) {
   if (parsed.data.isPrimary) {
     await prisma.address.updateMany({ where: { userId }, data: { isPrimary: false } });
   }
+  // Normalise optional text fields: empty string → null.
+  const { landmark, phone, ...rest } = parsed.data;
   const address = await prisma.address.create({
-    data: { ...parsed.data, userId },
+    data: {
+      ...rest,
+      userId,
+      landmark: landmark?.trim() || null,
+      phone: phone?.trim() || null,
+    },
   });
   return NextResponse.json({ address }, { status: 201 });
 }

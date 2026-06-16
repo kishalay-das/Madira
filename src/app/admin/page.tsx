@@ -21,12 +21,21 @@ const fmtMonth = (d: Date) =>
 type AddrParts = {
   line1: string;
   line2: string | null;
+  landmark?: string | null;
   city: string;
   postalCode: string;
   country: string;
 };
 const oneLineAddress = (a: AddrParts) =>
-  [a.line1, a.line2, `${a.city} ${a.postalCode}`, a.country].filter(Boolean).join(", ");
+  [
+    a.line1,
+    a.line2,
+    a.landmark ? `near ${a.landmark}` : null,
+    `${a.city} ${a.postalCode}`,
+    a.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
 export default async function AdminPage() {
   const session = await auth();
@@ -254,6 +263,7 @@ export default async function AdminPage() {
           createdAt: o.createdAt.toISOString(),
           couponCode: o.coupon?.code ?? null,
           address: o.address ? oneLineAddress(o.address) : null,
+          deliveryPhone: o.address?.phone ?? null,
           deliveryLat: o.deliveryLat ?? null,
           deliveryLng: o.deliveryLng ?? null,
           deliveryAccuracy: o.deliveryAccuracy ?? null,

@@ -70,8 +70,10 @@ export function CheckoutClient({
   const [newAddr, setNewAddr] = useState({
     label: "Home",
     line1: "",
+    landmark: "",
     city: "",
     postalCode: "",
+    phone: "",
   });
 
   async function saveAddress(e: React.FormEvent) {
@@ -95,7 +97,14 @@ export function CheckoutClient({
       const data = await res.json();
       setAddressId(data.address.id);
       setAddingAddr(false);
-      setNewAddr({ label: "Home", line1: "", city: "", postalCode: "" });
+      setNewAddr({
+        label: "Home",
+        line1: "",
+        landmark: "",
+        city: "",
+        postalCode: "",
+        phone: "",
+      });
       router.refresh();
     } catch (err) {
       setAddrErr(err instanceof Error ? err.message : "Could not save address.");
@@ -323,6 +332,12 @@ export function CheckoutClient({
                       required
                     />
                     <Field
+                      label="Landmark (optional)"
+                      placeholder="Near Central Park"
+                      value={newAddr.landmark}
+                      onChange={(v) => setNewAddr((p) => ({ ...p, landmark: v }))}
+                    />
+                    <Field
                       label="City"
                       placeholder="New York"
                       value={newAddr.city}
@@ -335,6 +350,13 @@ export function CheckoutClient({
                       value={newAddr.postalCode}
                       onChange={(v) => setNewAddr((p) => ({ ...p, postalCode: v }))}
                       required
+                    />
+                    <Field
+                      label="Phone (optional)"
+                      placeholder="+1 555 123 4567"
+                      type="tel"
+                      value={newAddr.phone}
+                      onChange={(v) => setNewAddr((p) => ({ ...p, phone: v }))}
                     />
                   </div>
                   {addrErr && <p className="text-xs text-burgundy">{addrErr}</p>}
@@ -594,6 +616,7 @@ function Field({
   value,
   onChange,
   required,
+  type = "text",
 }: {
   label: string;
   placeholder: string;
@@ -601,11 +624,13 @@ function Field({
   value?: string;
   onChange?: (v: string) => void;
   required?: boolean;
+  type?: string;
 }) {
   return (
     <label className={`block ${className}`}>
       <span className="mb-1.5 block text-[0.62rem] uppercase tracking-widest text-muted">{label}</span>
       <input
+        type={type}
         placeholder={placeholder}
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}

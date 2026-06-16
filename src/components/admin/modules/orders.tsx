@@ -11,6 +11,7 @@ import {
   Eye,
   Gift,
   MapPin,
+  Phone,
   Search,
   Truck,
   Users,
@@ -477,6 +478,14 @@ function OrderDetailModal({
       <DetailRow Icon={MapPin} label="Delivery">
         <p className="text-sm text-cream">{order.deliverySlot}</p>
         <p className="text-xs text-muted">{order.address ?? "No address on file"}</p>
+        {order.deliveryPhone && (
+          <a
+            href={`tel:${order.deliveryPhone}`}
+            className="mt-1 inline-flex items-center gap-1 text-xs text-gold transition-colors hover:text-gold-bright"
+          >
+            <Phone size={12} /> {order.deliveryPhone}
+          </a>
+        )}
         {order.giftWrap && (
           <p className="mt-1 inline-flex items-center gap-1 text-xs text-gold">
             <Gift size={12} /> Gift wrapped

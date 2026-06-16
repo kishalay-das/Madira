@@ -123,9 +123,11 @@ model Address {
   label      String
   line1      String
   line2      String?
+  landmark   String? // optional nearby landmark to help the courier
   city       String
   postalCode String
   country    String  @default("US")
+  phone      String? // optional delivery contact number
   isPrimary  Boolean @default(false)
 
   orders Order[]
