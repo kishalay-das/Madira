@@ -459,6 +459,7 @@ function ProductModal({
 }) {
   const [f, setF] = useState(() => ({
     name: editing?.name ?? "",
+    segment: editing?.segment ?? "PREMIUM",
     categorySlug: editing?.category ?? categories[0]?.slug ?? "",
     distillery: editing?.distillery ?? "",
     price: editing ? String(editing.price) : "",
@@ -544,6 +545,7 @@ function ProductModal({
     setSaving(true);
     const payload = {
       name: f.name,
+      segment: f.segment,
       categorySlug: f.categorySlug,
       distillery: f.distillery || undefined,
       price: Number(f.price),
@@ -616,6 +618,15 @@ function ProductModal({
           <div className="space-y-6">
             <FormGroup title="Basics">
               <AdminField label="Name" value={f.name} onChange={(v) => set("name", v)} placeholder="Lagavulin 16" required />
+              <SelectField
+                label="Storefront"
+                value={f.segment}
+                onChange={(v) => set("segment", v)}
+                options={[
+                  { value: "PREMIUM", label: "Premium" },
+                  { value: "STANDARD", label: "Standard" },
+                ]}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <SelectField
                   label="Category"

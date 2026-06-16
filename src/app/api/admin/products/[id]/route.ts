@@ -8,6 +8,7 @@ const csv = z.array(z.string().trim().min(1)).max(20);
 
 const patchSchema = z.object({
   name: z.string().min(2).max(120).optional(),
+  segment: z.enum(["PREMIUM", "STANDARD"]).optional(),
   categorySlug: z.string().min(1).optional(),
   price: z.number().positive().max(1_000_000).optional(),
   compareAt: z.number().positive().max(1_000_000).nullable().optional(),

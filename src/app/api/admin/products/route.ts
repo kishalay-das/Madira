@@ -11,6 +11,7 @@ const csv = z
 
 const createSchema = z.object({
   name: z.string().min(2).max(120),
+  segment: z.enum(["PREMIUM", "STANDARD"]).default("PREMIUM"),
   categorySlug: z.string().min(1),
   price: z.number().positive().max(1_000_000),
   compareAt: z.number().positive().max(1_000_000).optional(),
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
     data: {
       slug,
       name: d.name,
+      segment: d.segment,
       distillery: d.distillery || d.name,
       description: d.description || `${d.name} — a fine addition to the cellar.`,
       categoryId: category.id,
