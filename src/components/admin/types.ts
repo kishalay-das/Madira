@@ -65,6 +65,10 @@ export interface AdminData {
     createdAt: string;
     couponCode: string | null;
     address: string | null;
+    /* optional delivery pin captured at order time (browser geolocation) */
+    deliveryLat: number | null;
+    deliveryLng: number | null;
+    deliveryAccuracy: number | null;
     items: { name: string; slug: string; quantity: number; unitPrice: number }[];
   }[];
   customers: {

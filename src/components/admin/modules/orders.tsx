@@ -30,6 +30,7 @@ import {
   statusTone,
   useToast,
 } from "../shared";
+import { DeliveryMap } from "../delivery-map";
 
 /* ------------------------------------------------------------------ *
  * Date-range helpers (all Date math; no external dep)
@@ -482,6 +483,25 @@ function OrderDetailModal({
           </p>
         )}
       </DetailRow>
+
+      {/* Live delivery pin (only when the customer shared their location) */}
+      {order.deliveryLat != null && order.deliveryLng != null ? (
+        <div className="mt-4">
+          <p className="mb-2 text-[0.62rem] uppercase tracking-widest text-muted">
+            Delivery location
+          </p>
+          <DeliveryMap
+            lat={order.deliveryLat}
+            lng={order.deliveryLng}
+            accuracy={order.deliveryAccuracy}
+            label={order.number}
+          />
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-muted-2">
+          No live location shared for this order.
+        </p>
+      )}
 
       {/* Payment */}
       <DetailRow Icon={DollarSign} label="Payment">

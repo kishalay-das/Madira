@@ -10,6 +10,7 @@ import {
   CreditCard,
   Gift,
   Loader2,
+  MapPin,
   Minus,
   Plus,
   Trash2,
@@ -21,6 +22,7 @@ import { formatPrice } from "@/lib/utils";
 import { Bottle } from "@/components/bottle";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/store/cart";
+import { useGeolocation } from "@/hooks/use-geolocation";
 
 const FREE_SHIPPING = 150;
 
@@ -49,6 +51,7 @@ export function CheckoutClient({
 }) {
   const router = useRouter();
   const { items, setQty, remove, subtotal, clear } = useCart();
+  const geo = useGeolocation();
   const [gift, setGift] = useState(false);
   const [payment, setPayment] = useState("card");
   const [slot, setSlot] = useState("priority");
@@ -164,6 +167,10 @@ export function CheckoutClient({
           paymentMethod: payment,
           couponCode: coupon?.code,
           addressId: addressId ?? undefined,
+          // Optional delivery pin — only sent when the customer shared it.
+          deliveryLat: geo.coords?.lat,
+          deliveryLng: geo.coords?.lng,
+          deliveryAccuracy: geo.coords?.accuracy,
         }),
       });
       if (res.status === 401) {
@@ -475,6 +482,70 @@ export function CheckoutClient({
             <div className="flex items-center justify-between border-t border-hairline pt-4">
               <span className="text-cream">Total</span>
               <span className="font-display text-2xl text-cream">{formatPrice(total)}</span>
+            </div>
+          </div>
+
+          {/* Delivery location (optional) — helps the courier find you.
+              Never auto-prompts: the native dialog only opens on the button. */}
+          <div className="mt-6 rounded-xl border border-hairline bg-night/40 p-4">
+            <div className="flex items-start gap-2.5">
+              <MapPin size={16} className="mt-0.5 shrink-0 text-gold" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-cream">Share your delivery location</p>
+                <p className="mt-0.5 text-xs text-muted">
+                  Optional. We pin your current spot on a map so the courier can
+                  reach your door faster. Your address is still required.
+                </p>
+
+                {geo.status === "success" && geo.coords && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-emerald">
+                    <CheckCircle2 size={13} /> Location shared · accurate to ~
+                    {Math.round(geo.coords.accuracy)} m
+                  </p>
+                )}
+                {geo.status === "insecure" && (
+                  <p className="mt-2 text-xs text-muted">
+                    Location needs a secure (HTTPS) connection — skipping is fine.
+                  </p>
+                )}
+                {geo.status === "unsupported" && (
+                  <p className="mt-2 text-xs text-muted">
+                    Your browser doesn’t support location — skipping is fine.
+                  </p>
+                )}
+                {(geo.status === "denied" ||
+                  geo.status === "unavailable" ||
+                  geo.status === "timeout") && (
+                  <p className="mt-2 text-xs text-burgundy">{geo.error}</p>
+                )}
+
+                {(geo.status === "idle" ||
+                  geo.status === "loading" ||
+                  geo.status === "denied" ||
+                  geo.status === "unavailable" ||
+                  geo.status === "timeout") && (
+                  <button
+                    type="button"
+                    onClick={geo.request}
+                    disabled={geo.status === "loading"}
+                    className="mt-3 inline-flex items-center gap-2 rounded-full border border-gold/40 px-4 py-2 text-xs uppercase tracking-widest text-gold transition-colors hover:bg-gold/10 disabled:opacity-60"
+                  >
+                    {geo.status === "loading" ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" /> Locating…
+                      </>
+                    ) : geo.status === "idle" ? (
+                      <>
+                        <MapPin size={13} /> Enable location
+                      </>
+                    ) : (
+                      <>
+                        <MapPin size={13} /> Try again
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

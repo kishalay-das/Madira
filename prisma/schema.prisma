@@ -138,6 +138,11 @@ model Order {
   user         User         @relation(fields: [userId], references: [id])
   addressId    String?
   address      Address?     @relation(fields: [addressId], references: [id])
+  // Optional delivery pin captured from the customer's device at order time
+  // (browser Geolocation). Nullable — permission may be denied/unavailable.
+  deliveryLat      Float?
+  deliveryLng      Float?
+  deliveryAccuracy Float? // GPS accuracy radius in metres
   status       OrderStatus  @default(PENDING)
   deliverySlot DeliverySlot @default(STANDARD)
   scheduledFor DateTime?

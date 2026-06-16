@@ -18,6 +18,11 @@ const orderSchema = z.object({
   paymentMethod: z.enum(["card", "wallet", "cod"]).default("card"),
   couponCode: z.string().trim().max(40).optional(),
   addressId: z.string().optional(),
+  // Optional delivery pin from the browser Geolocation API (may be absent if
+  // the customer denied permission or is on an insecure/unsupported context).
+  deliveryLat: z.number().min(-90).max(90).optional(),
+  deliveryLng: z.number().min(-180).max(180).optional(),
+  deliveryAccuracy: z.number().min(0).max(100000).optional(),
 });
 
 const slotMap = {
@@ -45,8 +50,19 @@ export async function POST(request: Request) {
       { status: 422 }
     );
   }
-  const { items, deliverySlot, giftWrap, paymentMethod, couponCode, addressId } =
-    parsed.data;
+  const {
+    items,
+    deliverySlot,
+    giftWrap,
+    paymentMethod,
+    couponCode,
+    addressId,
+    deliveryLat,
+    deliveryLng,
+    deliveryAccuracy,
+  } = parsed.data;
+  // Only persist a pin when we have a complete coordinate pair.
+  const hasPin = deliveryLat != null && deliveryLng != null;
 
   // A delivery address is required, and must belong to this user.
   let validAddressId: string | null = null;
@@ -118,6 +134,9 @@ export async function POST(request: Request) {
         number,
         userId: session.user.id,
         addressId: validAddressId,
+        deliveryLat: hasPin ? deliveryLat : null,
+        deliveryLng: hasPin ? deliveryLng : null,
+        deliveryAccuracy: hasPin ? deliveryAccuracy ?? null : null,
         status: "PROCESSING",
         deliverySlot: slotMap[deliverySlot],
         giftWrap,

@@ -254,6 +254,9 @@ export default async function AdminPage() {
           createdAt: o.createdAt.toISOString(),
           couponCode: o.coupon?.code ?? null,
           address: o.address ? oneLineAddress(o.address) : null,
+          deliveryLat: o.deliveryLat ?? null,
+          deliveryLng: o.deliveryLng ?? null,
+          deliveryAccuracy: o.deliveryAccuracy ?? null,
           items: o.items.map((it) => ({
             name: it.product?.name ?? "Item",
             slug: it.product?.slug ?? "",
