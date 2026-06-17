@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getProducts, type ProductSort } from "@/lib/queries";
+import { getMode, segmentForMode } from "@/lib/mode";
 
 /**
  * GET /api/products
  * Query params: category, sort (popular|rating|price-asc|price-desc|newest), q, limit
+ * Results are scoped to the active storefront (premium/standard) via the
+ * `nocturne-mode` cookie — so search matches what the shopper is browsing.
  * Backed by PostgreSQL via Prisma.
  */
 export async function GET(request: Request) {
@@ -15,7 +18,8 @@ export async function GET(request: Request) {
   const limit = limitParam > 0 ? limitParam : undefined;
 
   try {
-    const products = await getProducts({ category, q, sort, limit });
+    const segment = segmentForMode(await getMode());
+    const products = await getProducts({ category, q, sort, limit, segment });
     return NextResponse.json({ count: products.length, products });
   } catch (err) {
     console.error("GET /api/products failed:", err);
