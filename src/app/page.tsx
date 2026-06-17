@@ -14,9 +14,9 @@ import { AppPromo } from "@/components/sections/app-promo";
 export const dynamic = "force-dynamic";
 
 // Home page title is the brand name only (absolute → bypasses the
-// "%s · Madeera" template).
+// "%s · Kishalay Madeera" template).
 export const metadata: Metadata = {
-  title: { absolute: "Madeera" },
+  title: { absolute: "Kishalay Madeera" },
 };
 
 export default async function Home() {

@@ -8,7 +8,7 @@ import {
 export const metadata: Metadata = {
   title: "Authenticity Promise",
   description:
-    "Every bottle Madeera ships is sourced, inspected, and sealed through a verified chain of custody — guaranteed authentic or your money back.",
+    "Every bottle Kishalay Madeera ships is sourced, inspected, and sealed through a verified chain of custody — guaranteed authentic or your money back.",
 };
 
 const pillars = [
@@ -51,7 +51,7 @@ export default function AuthenticityPromisePage() {
 
       <ProseSection title="Our guarantee, in plain terms">
         <p>
-          Every order is backed by the Madeera Authenticity Guarantee. If an independent
+          Every order is backed by the Kishalay Madeera Authenticity Guarantee. If an independent
           assessment ever determines that a bottle we sold is not authentic, we will refund
           the full purchase price and arrange collection at our expense. To learn how a
           specific bottle was verified, contact our concierge with your order number.

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Shared chrome for Madeera's editorial / informational pages
+ * Shared chrome for Kishalay Madeera's editorial / informational pages
  * (Our Story, Careers, Shipping Policy, …). Keeps the hero, spacing,
  * and prose rhythm consistent across every static page.
  */

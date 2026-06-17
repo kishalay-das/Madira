@@ -6,7 +6,7 @@ import { ContactForm } from "@/components/sections/contact-form";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Reach Madeera's concierge — for orders, membership, press, and partnership enquiries.",
+    "Reach Kishalay Madeera's concierge — for orders, membership, press, and partnership enquiries.",
 };
 
 const channels = [

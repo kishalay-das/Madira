@@ -30,25 +30,25 @@ const SITE = (
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "Madeera — Premium Spirits, Whiskey & Wine Delivered",
-    template: "%s · Madeera",
+    default: "Kishalay Madeera — Premium Spirits, Whiskey & Wine Delivered",
+    template: "%s · Kishalay Madeera",
   },
   description:
-    "Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
+    "Kishalay Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
   alternates: { canonical: "/" },
   keywords: [
     // Brand (unique) + common misspellings so wrong spellings still resolve
-    "Madeera",
-    "Madeera spirits",
-    "Madeera liquor",
-    "Madeera drinks",
-    "Madeera whiskey",
-    "Madeera wine",
+    "Kishalay Madeera",
+    "Kishalay Madeera spirits",
+    "Kishalay Madeera liquor",
+    "Kishalay Madeera drinks",
+    "Kishalay Madeera whiskey",
+    "Kishalay Madeera wine",
     "Madira",
     "Madeira",
     "Madera",
-    "Madeeraa",
-    "Madeera spirits delivery",
+    "Kishalay Madeeraa",
+    "Kishalay Madeera spirits delivery",
     // Category / intent
     "premium spirits delivery",
     "luxury whiskey",
@@ -56,20 +56,20 @@ export const metadata: Metadata = {
     "champagne delivery",
     "alcohol delivery",
   ],
-  applicationName: "Madeera",
+  applicationName: "Kishalay Madeera",
   manifest: "/manifest.webmanifest",
   openGraph: {
-    title: "Madeera — Premium Spirits, Whiskey & Wine Delivered",
+    title: "Kishalay Madeera — Premium Spirits, Whiskey & Wine Delivered",
     description:
-      "Madeera delivers the world's finest spirits — authenticated and shipped with concierge care.",
+      "Kishalay Madeera delivers the world's finest spirits — authenticated and shipped with concierge care.",
     type: "website",
     url: SITE,
-    siteName: "Madeera",
+    siteName: "Kishalay Madeera",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Madeera — Premium Spirits Delivered",
-    description: "Madeera delivers the world's finest whiskey, wine and rare spirits.",
+    title: "Kishalay Madeera — Premium Spirits Delivered",
+    description: "Kishalay Madeera delivers the world's finest whiskey, wine and rare spirits.",
   },
   verification: { google: "C0i0lgPc246W8LqT_EkOVQk3UzVrAQI0pmKXXtNtmMU" },
 };
@@ -95,7 +95,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: modeInitScript }} />
-        {/* Structured data: tells Google the brand is "Madeera" and enables
+        {/* Structured data: tells Google the brand is "Kishalay Madeera" and enables
             the sitelinks search box for the brand query. */}
         <script
           type="application/ld+json"
@@ -106,16 +106,16 @@ export default function RootLayout({
                 {
                   "@type": "Organization",
                   "@id": `${SITE}/#organization`,
-                  name: "Madeera",
+                  name: "Kishalay Madeera",
                   url: SITE,
                   logo: `${SITE}/icon.svg`,
                   description:
-                    "Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
+                    "Kishalay Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
                 },
                 {
                   "@type": "WebSite",
                   "@id": `${SITE}/#website`,
-                  name: "Madeera",
+                  name: "Kishalay Madeera",
                   url: SITE,
                   publisher: { "@id": `${SITE}/#organization` },
                   potentialAction: {

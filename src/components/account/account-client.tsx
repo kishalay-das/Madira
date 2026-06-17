@@ -412,7 +412,7 @@ function Membership({ tier }: { tier: string }) {
         </span>
         <h2 className="mt-5 font-display text-3xl text-cream">Your membership</h2>
         <p className="mt-2 text-muted">
-          {active ? "Renews annually · $240 / year" : "Upgrade to unlock the full Madeera experience."}
+          {active ? "Renews annually · $240 / year" : "Upgrade to unlock the full Kishalay Madeera experience."}
         </p>
 
         <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">

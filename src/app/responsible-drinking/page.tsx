@@ -8,7 +8,7 @@ import {
 export const metadata: Metadata = {
   title: "Responsible Drinking",
   description:
-    "Madeera celebrates spirits as a craft to be savoured. Our commitment to age verification and drinking responsibly.",
+    "Kishalay Madeera celebrates spirits as a craft to be savoured. Our commitment to age verification and drinking responsibly.",
 };
 
 const principles = [
@@ -31,7 +31,7 @@ export default function ResponsibleDrinkingPage() {
     <PageShell
       eyebrow="Support"
       title="Drink Beautifully, Drink Responsibly"
-      lede="Madeera exists to celebrate the craft of great spirits — and great spirits are meant to be savoured, never abused."
+      lede="Kishalay Madeera exists to celebrate the craft of great spirits — and great spirits are meant to be savoured, never abused."
     >
       <div className="mb-16">
         <PillarGrid items={principles} />

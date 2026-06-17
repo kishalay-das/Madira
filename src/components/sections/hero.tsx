@@ -47,7 +47,7 @@ export function Hero() {
             transition={{ duration: 0.8 }}
             className="eyebrow"
           >
-            ✦ Madeera — The Art of Fine Spirits
+            ✦ Kishalay Madeera — The Art of Fine Spirits
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}

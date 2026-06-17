@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How Madeera collects, uses, and protects your personal information.",
+    "How Kishalay Madeera collects, uses, and protects your personal information.",
 };
 
 export default function PrivacyPage() {
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         <ProseSection title="Sharing">
           <p>
             We do not sell your personal data. We share it only with the partners
-            needed to run Madeera — payment processors, delivery carriers, and
+            needed to run Kishalay Madeera — payment processors, delivery carriers, and
             media/hosting providers — and only as much as each requires. We may
             disclose information where the law obliges us to.
           </p>
