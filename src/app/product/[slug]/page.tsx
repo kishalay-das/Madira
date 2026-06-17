@@ -66,8 +66,9 @@ export default async function ProductPage({
       : null,
   ]);
 
-  const SITE =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app";
+  const SITE = (
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app"
+  ).replace(/\/+$/, "");
   const productLd = {
     "@context": "https://schema.org",
     "@type": "Product",

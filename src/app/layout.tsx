@@ -23,7 +23,9 @@ const playfair = Playfair_Display({
 
 // Production URL. Override with NEXT_PUBLIC_SITE_URL in the environment
 // (e.g. once a custom domain is connected); falls back to the live Vercel URL.
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app";
+const SITE = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app"
+).replace(/\/+$/, "");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
