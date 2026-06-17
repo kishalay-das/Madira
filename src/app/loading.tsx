@@ -6,7 +6,7 @@ export default function Loading() {
           <div className="absolute inset-0 animate-[spin-slow_1.6s_linear_infinite] rounded-full border-2 border-gold/20 border-t-gold" />
           <div className="absolute inset-2 rounded-full bg-[radial-gradient(circle,rgba(200,162,75,0.3),transparent_70%)]" />
         </div>
-        <p className="font-display text-sm tracking-[0.4em] text-gold">NOCTURNE</p>
+        <p className="font-display text-sm tracking-[0.4em] text-gold">MADEERA</p>
       </div>
     </div>
   );

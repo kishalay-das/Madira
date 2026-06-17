@@ -21,16 +21,19 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
-const SITE = "https://nocturne.example";
+// Production URL. Override with NEXT_PUBLIC_SITE_URL in the environment
+// (e.g. once a custom domain is connected); falls back to the live Vercel URL.
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "Nocturne — Premium Spirits Delivered to Your Doorstep",
-    template: "%s · Nocturne",
+    default: "Madeera — Premium Spirits, Whiskey & Wine Delivered",
+    template: "%s · Madeera",
   },
   description:
-    "A modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered with concierge care.",
+    "Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
+  alternates: { canonical: "/" },
   keywords: [
     // Brand (unique) + common misspellings so wrong spellings still resolve
     "Madeera",
@@ -51,16 +54,21 @@ export const metadata: Metadata = {
     "champagne delivery",
     "alcohol delivery",
   ],
-  applicationName: "Nocturne",
+  applicationName: "Madeera",
   manifest: "/manifest.webmanifest",
   openGraph: {
-    title: "Nocturne — Premium Spirits Delivered",
-    description: "The world's finest spirits, delivered with concierge care.",
+    title: "Madeera — Premium Spirits, Whiskey & Wine Delivered",
+    description:
+      "Madeera delivers the world's finest spirits — authenticated and shipped with concierge care.",
     type: "website",
     url: SITE,
-    siteName: "Nocturne",
+    siteName: "Madeera",
   },
-  twitter: { card: "summary_large_image", title: "Nocturne — Premium Spirits" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Madeera — Premium Spirits Delivered",
+    description: "Madeera delivers the world's finest whiskey, wine and rare spirits.",
+  },
   verification: { google: "C0i0lgPc246W8LqT_EkOVQk3UzVrAQI0pmKXXtNtmMU" },
 };
 
@@ -85,6 +93,42 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: modeInitScript }} />
+        {/* Structured data: tells Google the brand is "Madeera" and enables
+            the sitelinks search box for the brand query. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": `${SITE}/#organization`,
+                  name: "Madeera",
+                  url: SITE,
+                  logo: `${SITE}/icon.svg`,
+                  description:
+                    "Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": `${SITE}/#website`,
+                  name: "Madeera",
+                  url: SITE,
+                  publisher: { "@id": `${SITE}/#organization` },
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate: `${SITE}/shop?q={search_term_string}`,
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body className="min-h-full">
         <SessionProvider>

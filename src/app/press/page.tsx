@@ -5,13 +5,13 @@ import { PageShell, ProseSection } from "@/components/layout/page-shell";
 export const metadata: Metadata = {
   title: "Press",
   description:
-    "Nocturne in the press — announcements, media resources, and contacts for journalists and partners.",
+    "Madeera in the press — announcements, media resources, and contacts for journalists and partners.",
 };
 
 const releases = [
   {
     date: "March 2026",
-    title: "Nocturne surpasses 120,000 bottles authenticated",
+    title: "Madeera surpasses 120,000 bottles authenticated",
     excerpt:
       "The luxury spirits house marks a milestone in its mission to eliminate counterfeits from the secondary market.",
   },
@@ -23,7 +23,7 @@ const releases = [
   },
   {
     date: "June 2025",
-    title: "Nocturne partners with twelve independent distilleries",
+    title: "Madeera partners with twelve independent distilleries",
     excerpt:
       "A new direct-sourcing program brings allocated single-cask releases to members with verified provenance.",
   },
@@ -34,7 +34,7 @@ export default function PressPage() {
     <PageShell
       eyebrow="Company"
       title="Press & Media"
-      lede="Resources for journalists, editors, and partners covering Nocturne and the world of luxury spirits."
+      lede="Resources for journalists, editors, and partners covering Madeera and the world of luxury spirits."
     >
       <section className="mx-auto max-w-3xl">
         <h2 className="font-display text-2xl text-cream md:text-3xl">Latest announcements</h2>
@@ -57,7 +57,7 @@ export default function PressPage() {
       <ProseSection title="Media enquiries">
         <p>
           For interviews, brand assets, or press enquiries, reach our communications team at{" "}
-          <a href="mailto:press@nocturne.example">press@nocturne.example</a>. High-resolution
+          <a href="mailto:press@madeera.com">press@madeera.com</a>. High-resolution
           logos and product imagery are available on request. For all other questions, visit{" "}
           <Link href="/contact">Contact</Link>.
         </p>

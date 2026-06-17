@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Cookie Policy",
   description:
-    "How and why Nocturne uses cookies and similar technologies, and how to control them.",
+    "How and why Madeera uses cookies and similar technologies, and how to control them.",
 };
 
 export default function CookiesPage() {
@@ -17,7 +17,7 @@ export default function CookiesPage() {
     <PageShell
       eyebrow="Legal"
       title="Cookie Policy"
-      lede="Cookies help Nocturne remember your session, your cart, and your preferences. Here's how we use them and how to manage them."
+      lede="Cookies help Madeera remember your session, your cart, and your preferences. Here's how we use them and how to manage them."
     >
       <ProseStack>
         <ProseSection title="What cookies are">

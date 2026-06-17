@@ -116,7 +116,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="font-display text-2xl tracking-[0.3em] text-cream">
-              NOCTURNE
+              MADEERA
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
               A modern luxury house for the world&apos;s finest spirits — sourced,
@@ -155,7 +155,7 @@ export function Footer() {
         <div className="gold-rule my-12" />
 
         <div className="flex flex-col items-center justify-between gap-4 text-xs text-muted md:flex-row">
-          <p>© {new Date().getFullYear()} Nocturne Spirits. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Madeera Spirits. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link href="/privacy" className="hover:text-cream">Privacy</Link>
             <Link href="/terms" className="hover:text-cream">Terms</Link>

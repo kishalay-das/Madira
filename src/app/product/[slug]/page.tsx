@@ -17,10 +17,18 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Not Found" };
+  const image = product.images?.[0];
   return {
     title: product.name,
     description: product.description,
-    openGraph: { title: product.name, description: product.description },
+    alternates: { canonical: `/product/${product.slug}` },
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      type: "website",
+      url: `/product/${product.slug}`,
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
   };
 }
 
@@ -58,8 +66,47 @@ export default async function ProductPage({
       : null,
   ]);
 
+  const SITE =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app";
+  const productLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    sku: product.id,
+    brand: { "@type": "Brand", name: product.distillery || "Madeera" },
+    ...(product.images?.length
+      ? { image: product.images.map((src) => new URL(src, SITE).toString()) }
+      : {}),
+    ...(product.reviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.rating,
+            reviewCount: product.reviews,
+          },
+        }
+      : {}),
+    offers: {
+      "@type": "Offer",
+      url: `${SITE}/product/${product.slug}`,
+      priceCurrency: "USD",
+      price: product.price,
+      availability:
+        product.stock > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: "Madeera" },
+    },
+  };
+
   return (
-    <ProductDetail
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }}
+      />
+      <ProductDetail
       product={product}
       related={related}
       reviews={reviewRows.map((r) => ({
@@ -73,5 +120,6 @@ export default async function ProductPage({
       wishlisted={!!wished}
       isAuthed={!!session?.user}
     />
+    </>
   );
 }
