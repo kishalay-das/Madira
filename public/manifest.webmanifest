@@ -1,7 +1,7 @@
 {
-  "name": "SipSipGo — Premium Spirits Delivered",
-  "short_name": "SipSipGo",
-  "description": "SipSipGo — a modern luxury house for the world's finest spirits, delivered with concierge care.",
+  "name": "BottleExpress — Premium Spirits Delivered",
+  "short_name": "BottleExpress",
+  "description": "BottleExpress — a modern luxury house for the world's finest spirits, delivered with concierge care.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

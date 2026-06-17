@@ -56,7 +56,7 @@ const layout: CardConfig[] = [
   },
   {
     slug: "luxury-gift-packs",
-    product: "sipsipgo-reserve-trilogy",
+    product: "bottleexpress-reserve-trilogy",
     badge: "Exclusive Import",
     blurb: "Wrapped, ribboned and ready to astonish.",
     variant: "standard",

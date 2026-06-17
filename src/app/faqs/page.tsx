@@ -5,7 +5,7 @@ import { FaqAccordion, type FaqGroup } from "@/components/sections/faq-accordion
 export const metadata: Metadata = {
   title: "FAQs",
   description:
-    "Answers to common questions about SipSipGo — orders, delivery, authenticity, membership, and returns.",
+    "Answers to common questions about BottleExpress — orders, delivery, authenticity, membership, and returns.",
 };
 
 const groups: FaqGroup[] = [

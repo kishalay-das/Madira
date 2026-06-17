@@ -66,7 +66,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     <div className="container-luxe flex min-h-[80vh] items-center justify-center py-16">
       <div className="glass-dark w-full max-w-md rounded-[var(--radius-luxe)] p-8 md:p-10">
         <div className="text-center">
-          <p className="eyebrow mb-3">{isRegister ? "Join SipSipGo" : "Welcome back"}</p>
+          <p className="eyebrow mb-3">{isRegister ? "Join BottleExpress" : "Welcome back"}</p>
           <h1 className="font-display text-3xl text-cream">
             {isRegister ? "Create your account" : "Sign in"}
           </h1>
@@ -136,7 +136,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             </>
           ) : (
             <>
-              New to SipSipGo?{" "}
+              New to BottleExpress?{" "}
               <Link href="/register" className="text-gold hover:text-gold-bright">
                 Create an account
               </Link>

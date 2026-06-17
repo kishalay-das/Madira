@@ -8,7 +8,7 @@ import {
 export const metadata: Metadata = {
   title: "Sustainability",
   description:
-    "SipSipGo's commitments to responsible sourcing, low-impact logistics, and lasting packaging.",
+    "BottleExpress's commitments to responsible sourcing, low-impact logistics, and lasting packaging.",
 };
 
 const commitments = [

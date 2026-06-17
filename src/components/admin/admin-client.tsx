@@ -31,7 +31,7 @@ export function AdminClient({ data }: { data: AdminData }) {
           <aside>
             <div className="glass-dark rounded-[var(--radius-luxe)] p-4 lg:sticky lg:top-28 lg:p-5">
               <p className="px-3 pb-4 font-display text-lg tracking-[0.2em] text-cream">
-                SipSipGo
+                BottleExpress
                 <span className="block text-[0.55rem] tracking-[0.3em] text-gold">ADMIN CONSOLE</span>
               </p>
               <nav className="no-scrollbar flex gap-2 overflow-x-auto lg:flex-col lg:gap-0 lg:space-y-1 lg:overflow-visible">

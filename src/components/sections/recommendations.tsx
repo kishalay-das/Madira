@@ -18,7 +18,7 @@ export function Recommendations() {
               <Sparkles size={18} />
             </span>
             <div>
-              <p className="eyebrow">Powered by SipSipGo AI</p>
+              <p className="eyebrow">Powered by BottleExpress AI</p>
               <h2 className="font-display text-3xl tracking-tight text-cream sm:text-4xl">
                 Picked for you
               </h2>

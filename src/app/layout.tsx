@@ -30,24 +30,24 @@ const SITE = (
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "SipSipGo — Premium Spirits, Whiskey & Wine Delivered",
-    template: "%s · SipSipGo",
+    default: "BottleExpress — Premium Spirits, Whiskey & Wine Delivered",
+    template: "%s · BottleExpress",
   },
   description:
-    "SipSipGo is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
+    "BottleExpress is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
   alternates: { canonical: "/" },
   keywords: [
     // Brand (unique) + common misspellings so wrong spellings still resolve
-    "SipSipGo",
-    "SipSipGo spirits",
-    "SipSipGo liquor",
-    "SipSipGo drinks",
-    "SipSipGo whiskey",
-    "SipSipGo wine",
-    "Sip Sip Go",
-    "SipSip Go",
-    "Sipsipgo",
-    "SipSipGo spirits delivery",
+    "BottleExpress",
+    "BottleExpress spirits",
+    "BottleExpress liquor",
+    "BottleExpress drinks",
+    "BottleExpress whiskey",
+    "BottleExpress wine",
+    "Bottle Express",
+    "BottleExpress delivery",
+    "bottle express liquor",
+    "BottleExpress spirits delivery",
     // Category / intent
     "premium spirits delivery",
     "luxury whiskey",
@@ -55,20 +55,20 @@ export const metadata: Metadata = {
     "champagne delivery",
     "alcohol delivery",
   ],
-  applicationName: "SipSipGo",
+  applicationName: "BottleExpress",
   manifest: "/manifest.webmanifest",
   openGraph: {
-    title: "SipSipGo — Premium Spirits, Whiskey & Wine Delivered",
+    title: "BottleExpress — Premium Spirits, Whiskey & Wine Delivered",
     description:
-      "SipSipGo delivers the world's finest spirits — authenticated and shipped with concierge care.",
+      "BottleExpress delivers the world's finest spirits — authenticated and shipped with concierge care.",
     type: "website",
     url: SITE,
-    siteName: "SipSipGo",
+    siteName: "BottleExpress",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SipSipGo — Premium Spirits Delivered",
-    description: "SipSipGo delivers the world's finest whiskey, wine and rare spirits.",
+    title: "BottleExpress — Premium Spirits Delivered",
+    description: "BottleExpress delivers the world's finest whiskey, wine and rare spirits.",
   },
   verification: { google: "C0i0lgPc246W8LqT_EkOVQk3UzVrAQI0pmKXXtNtmMU" },
 };
@@ -94,7 +94,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: modeInitScript }} />
-        {/* Structured data: tells Google the brand is "SipSipGo" and enables
+        {/* Structured data: tells Google the brand is "BottleExpress" and enables
             the sitelinks search box for the brand query. */}
         <script
           type="application/ld+json"
@@ -105,16 +105,16 @@ export default function RootLayout({
                 {
                   "@type": "Organization",
                   "@id": `${SITE}/#organization`,
-                  name: "SipSipGo",
+                  name: "BottleExpress",
                   url: SITE,
                   logo: `${SITE}/icon.svg`,
                   description:
-                    "SipSipGo is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
+                    "BottleExpress is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
                 },
                 {
                   "@type": "WebSite",
                   "@id": `${SITE}/#website`,
-                  name: "SipSipGo",
+                  name: "BottleExpress",
                   url: SITE,
                   publisher: { "@id": `${SITE}/#organization` },
                   potentialAction: {

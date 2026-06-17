@@ -6,20 +6,20 @@ import { ContactForm } from "@/components/sections/contact-form";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Reach SipSipGo's concierge — for orders, membership, press, and partnership enquiries.",
+    "Reach BottleExpress's concierge — for orders, membership, press, and partnership enquiries.",
 };
 
 const channels = [
   {
     Icon: Mail,
     title: "Concierge",
-    detail: "concierge@sipsipgo.com",
+    detail: "concierge@bottleexpress.com",
     note: "Orders, delivery & membership",
   },
   {
     Icon: MessageCircle,
     title: "Press",
-    detail: "press@sipsipgo.com",
+    detail: "press@bottleexpress.com",
     note: "Media & partnership enquiries",
   },
   {

@@ -24,7 +24,7 @@ export function Membership() {
           <div className="relative grid grid-cols-1 gap-10 p-9 md:grid-cols-2 md:p-14">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 text-[0.62rem] uppercase tracking-[0.24em] text-gold">
-                <Crown size={14} /> SipSipGo VIP
+                <Crown size={14} /> BottleExpress VIP
               </span>
               <h2 className="mt-6 font-display text-3xl leading-tight text-cream sm:text-4xl md:text-5xl text-balance">
                 A membership for the truly initiated

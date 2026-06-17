@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Our Story",
   description:
-    "How SipSipGo became a modern luxury house for the world's finest spirits — sourced, authenticated and delivered with concierge care.",
+    "How BottleExpress became a modern luxury house for the world's finest spirits — sourced, authenticated and delivered with concierge care.",
 };
 
 export default function OurStoryPage() {
@@ -17,7 +17,7 @@ export default function OurStoryPage() {
     <PageShell
       eyebrow="Company"
       title="Our Story"
-      lede="SipSipGo began with a simple frustration — that the world's most extraordinary bottles were the hardest to find, verify, and trust. We set out to change that."
+      lede="BottleExpress began with a simple frustration — that the world's most extraordinary bottles were the hardest to find, verify, and trust. We set out to change that."
     >
       <div className="mb-16">
         <StatRow
@@ -37,7 +37,7 @@ export default function OurStoryPage() {
             grower champagne after hours. What bound us together was an obsession with
             <strong> provenance</strong> — knowing exactly where a bottle came from, who
             touched it, and how it was kept. That obsession is now the spine of everything
-            SipSipGo does.
+            BottleExpress does.
           </p>
           <p>
             Today we work directly with distilleries, estates, and trusted brokers to bring
@@ -48,7 +48,7 @@ export default function OurStoryPage() {
 
         <ProseSection title="Concierge, not commerce">
           <p>
-            SipSipGo is designed to feel less like a store and more like a private cellar
+            BottleExpress is designed to feel less like a store and more like a private cellar
             with a sommelier on call. From temperature-controlled storage to scheduled
             white-glove delivery, every detail is built to honor the bottle and the moment
             it's opened.

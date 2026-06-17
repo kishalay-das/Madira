@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How SipSipGo collects, uses, and protects your personal information.",
+    "How BottleExpress collects, uses, and protects your personal information.",
 };
 
 export default function PrivacyPage() {
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         <ProseSection title="Sharing">
           <p>
             We do not sell your personal data. We share it only with the partners
-            needed to run SipSipGo — payment processors, delivery carriers, and
+            needed to run BottleExpress — payment processors, delivery carriers, and
             media/hosting providers — and only as much as each requires. We may
             disclose information where the law obliges us to.
           </p>
@@ -66,7 +66,7 @@ export default function PrivacyPage() {
         <ProseSection title="Contact">
           <p>
             Questions about this policy? Email{" "}
-            <a href="mailto:privacy@sipsipgo.com">privacy@sipsipgo.com</a>.
+            <a href="mailto:privacy@bottleexpress.com">privacy@bottleexpress.com</a>.
           </p>
         </ProseSection>
       </ProseStack>

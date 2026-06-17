@@ -8,7 +8,7 @@ import {
 export const metadata: Metadata = {
   title: "Shipping Policy",
   description:
-    "How SipSipGo ships — delivery slots, age verification, regions, timing, and tracking.",
+    "How BottleExpress ships — delivery slots, age verification, regions, timing, and tracking.",
 };
 
 export default function ShippingPolicyPage() {
