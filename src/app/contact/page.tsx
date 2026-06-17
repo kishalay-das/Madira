@@ -6,20 +6,20 @@ import { ContactForm } from "@/components/sections/contact-form";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Reach Kishalay Madeera's concierge — for orders, membership, press, and partnership enquiries.",
+    "Reach SipSipGo's concierge — for orders, membership, press, and partnership enquiries.",
 };
 
 const channels = [
   {
     Icon: Mail,
     title: "Concierge",
-    detail: "concierge@madeera.com",
+    detail: "concierge@sipsipgo.com",
     note: "Orders, delivery & membership",
   },
   {
     Icon: MessageCircle,
     title: "Press",
-    detail: "press@madeera.com",
+    detail: "press@sipsipgo.com",
     note: "Media & partnership enquiries",
   },
   {

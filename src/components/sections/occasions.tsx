@@ -8,7 +8,7 @@ import { Reveal, SectionHeading } from "@/components/ui/reveal";
 const productForOccasion: Record<string, string> = {
   party: "grey-goose-magnum",
   wedding: "dom-perignon-vintage",
-  corporate: "madeera-reserve-trilogy",
+  corporate: "sipsipgo-reserve-trilogy",
   anniversary: "opus-one-napa",
   celebration: "krug-grande-cuvee",
 };

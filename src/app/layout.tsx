@@ -30,25 +30,24 @@ const SITE = (
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "Kishalay Madeera — Premium Spirits, Whiskey & Wine Delivered",
-    template: "%s · Kishalay Madeera",
+    default: "SipSipGo — Premium Spirits, Whiskey & Wine Delivered",
+    template: "%s · SipSipGo",
   },
   description:
-    "Kishalay Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
+    "SipSipGo is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
   alternates: { canonical: "/" },
   keywords: [
     // Brand (unique) + common misspellings so wrong spellings still resolve
-    "Kishalay Madeera",
-    "Kishalay Madeera spirits",
-    "Kishalay Madeera liquor",
-    "Kishalay Madeera drinks",
-    "Kishalay Madeera whiskey",
-    "Kishalay Madeera wine",
-    "Madira",
-    "Madeira",
-    "Madera",
-    "Kishalay Madeeraa",
-    "Kishalay Madeera spirits delivery",
+    "SipSipGo",
+    "SipSipGo spirits",
+    "SipSipGo liquor",
+    "SipSipGo drinks",
+    "SipSipGo whiskey",
+    "SipSipGo wine",
+    "Sip Sip Go",
+    "SipSip Go",
+    "Sipsipgo",
+    "SipSipGo spirits delivery",
     // Category / intent
     "premium spirits delivery",
     "luxury whiskey",
@@ -56,20 +55,20 @@ export const metadata: Metadata = {
     "champagne delivery",
     "alcohol delivery",
   ],
-  applicationName: "Kishalay Madeera",
+  applicationName: "SipSipGo",
   manifest: "/manifest.webmanifest",
   openGraph: {
-    title: "Kishalay Madeera — Premium Spirits, Whiskey & Wine Delivered",
+    title: "SipSipGo — Premium Spirits, Whiskey & Wine Delivered",
     description:
-      "Kishalay Madeera delivers the world's finest spirits — authenticated and shipped with concierge care.",
+      "SipSipGo delivers the world's finest spirits — authenticated and shipped with concierge care.",
     type: "website",
     url: SITE,
-    siteName: "Kishalay Madeera",
+    siteName: "SipSipGo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kishalay Madeera — Premium Spirits Delivered",
-    description: "Kishalay Madeera delivers the world's finest whiskey, wine and rare spirits.",
+    title: "SipSipGo — Premium Spirits Delivered",
+    description: "SipSipGo delivers the world's finest whiskey, wine and rare spirits.",
   },
   verification: { google: "C0i0lgPc246W8LqT_EkOVQk3UzVrAQI0pmKXXtNtmMU" },
 };
@@ -95,7 +94,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: modeInitScript }} />
-        {/* Structured data: tells Google the brand is "Kishalay Madeera" and enables
+        {/* Structured data: tells Google the brand is "SipSipGo" and enables
             the sitelinks search box for the brand query. */}
         <script
           type="application/ld+json"
@@ -106,16 +105,16 @@ export default function RootLayout({
                 {
                   "@type": "Organization",
                   "@id": `${SITE}/#organization`,
-                  name: "Kishalay Madeera",
+                  name: "SipSipGo",
                   url: SITE,
                   logo: `${SITE}/icon.svg`,
                   description:
-                    "Kishalay Madeera is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
+                    "SipSipGo is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits.",
                 },
                 {
                   "@type": "WebSite",
                   "@id": `${SITE}/#website`,
-                  name: "Kishalay Madeera",
+                  name: "SipSipGo",
                   url: SITE,
                   publisher: { "@id": `${SITE}/#organization` },
                   potentialAction: {

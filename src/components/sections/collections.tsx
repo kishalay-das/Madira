@@ -56,7 +56,7 @@ const layout: CardConfig[] = [
   },
   {
     slug: "luxury-gift-packs",
-    product: "madeera-reserve-trilogy",
+    product: "sipsipgo-reserve-trilogy",
     badge: "Exclusive Import",
     blurb: "Wrapped, ribboned and ready to astonish.",
     variant: "standard",

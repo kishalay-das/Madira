@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "The terms that govern your use of Kishalay Madeera and your purchases of fine spirits.",
+    "The terms that govern your use of SipSipGo and your purchases of fine spirits.",
 };
 
 export default function TermsPage() {
@@ -17,13 +17,13 @@ export default function TermsPage() {
     <PageShell
       eyebrow="Legal"
       title="Terms of Service"
-      lede="These terms govern your use of Kishalay Madeera. By browsing or ordering, you agree to them."
+      lede="These terms govern your use of SipSipGo. By browsing or ordering, you agree to them."
     >
       <ProseStack>
         <ProseSection title="Eligibility & age">
           <p>
             You must be of legal drinking age (21+ where applicable) to purchase
-            from Kishalay Madeera. Age is verified at checkout and again on delivery, and a
+            from SipSipGo. Age is verified at checkout and again on delivery, and a
             valid ID with signature is required to receive an order. We may refuse
             or cancel any order that cannot meet these requirements.
           </p>
@@ -65,7 +65,7 @@ export default function TermsPage() {
 
         <ProseSection title="Liability">
           <p>
-            Kishalay Madeera is provided on a reasonable-efforts basis. To the fullest
+            SipSipGo is provided on a reasonable-efforts basis. To the fullest
             extent permitted by law, we are not liable for indirect or incidental
             damages arising from your use of the service. Nothing here limits rights
             that cannot be excluded under applicable law.

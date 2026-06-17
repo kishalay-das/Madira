@@ -234,7 +234,7 @@ export function Navbar() {
             >
               <LiquidDecanter hovered={logoHovered} id="desktop" className="w-5.5 h-5.5" />
               <span className="text-sm font-medium text-cream tracking-wide group-hover/logo:text-gold transition-colors duration-300">
-                KISHALAY MADEERA
+                SipSipGo
               </span>
             </Link>
           </motion.div>
@@ -400,7 +400,7 @@ export function Navbar() {
                 {/* Right column */}
                 <div className="col-span-3 flex flex-col justify-between py-1">
                   <div>
-                    <p className="eyebrow text-[0.6rem] text-muted tracking-[0.3em] uppercase">Kishalay Madeera Vault</p>
+                    <p className="eyebrow text-[0.6rem] text-muted tracking-[0.3em] uppercase">SipSipGo Vault</p>
                     <p className="mt-3 font-display italic text-sm text-cream/90 leading-relaxed">
                       {DROPDOWN_DATA[activeDropdown].quote}
                     </p>
@@ -439,7 +439,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2 group/logo">
           <LiquidDecanter hovered={false} id="mobile-sticky" className="w-5 h-5" />
           <span className="font-display text-base text-cream hover:text-gold transition-colors tracking-[0.2em]">
-            KISHALAY MADEERA
+            SipSipGo
           </span>
         </Link>
         <div className="flex items-center gap-1.5">
@@ -493,7 +493,7 @@ export function Navbar() {
                   <LiquidDecanter hovered={true} id="mobile-drawer" className="w-6 h-6" />
                   <div>
                     <span className="block font-display text-xl tracking-[0.3em] text-cream">
-                      KISHALAY MADEERA
+                      SipSipGo
                     </span>
                     <span className="text-[0.55rem] uppercase tracking-[0.4em] text-gold">
                       Premium Spirits

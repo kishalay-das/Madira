@@ -75,7 +75,7 @@ export default async function ProductPage({
     name: product.name,
     description: product.description,
     sku: product.id,
-    brand: { "@type": "Brand", name: product.distillery || "Kishalay Madeera" },
+    brand: { "@type": "Brand", name: product.distillery || "SipSipGo" },
     ...(product.images?.length
       ? { image: product.images.map((src) => new URL(src, SITE).toString()) }
       : {}),
@@ -97,7 +97,7 @@ export default async function ProductPage({
         product.stock > 0
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
-      seller: { "@type": "Organization", name: "Kishalay Madeera" },
+      seller: { "@type": "Organization", name: "SipSipGo" },
     },
   };
 

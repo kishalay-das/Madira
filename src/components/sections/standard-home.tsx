@@ -226,7 +226,7 @@ export async function StandardHome() {
             </h1>
 
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-parchment">
-              Kishalay Madeera brings you quality beer, wine and spirits at honest,
+              SipSipGo brings you quality beer, wine and spirits at honest,
               everyday prices. Order by 2&nbsp;pm for same-day delivery — no
               markups, no fuss.
             </p>

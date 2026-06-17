@@ -12,7 +12,7 @@ export function AppPromo() {
         <div className="pointer-events-none absolute -right-10 bottom-0 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(200,162,75,0.14),transparent_70%)]" />
 
         <Reveal>
-          <p className="eyebrow">The Kishalay Madeera App</p>
+          <p className="eyebrow">The SipSipGo App</p>
           <h2 className="mt-4 font-display text-3xl leading-tight text-cream sm:text-4xl md:text-5xl text-balance">
             Your cellar, in your pocket
           </h2>
@@ -75,7 +75,7 @@ export function AppPromo() {
             <PhoneFrame>
               <div className="flex h-full flex-col p-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-xs tracking-[0.2em] text-cream">KISHALAY MADEERA</span>
+                  <span className="font-display text-xs tracking-[0.2em] text-cream">SipSipGo</span>
                   <Bell size={12} className="text-gold" />
                 </div>
                 <div className="mt-3 h-28 rounded-xl bg-[radial-gradient(circle_at_50%_20%,rgba(200,162,75,0.4),transparent_70%)] p-2">
