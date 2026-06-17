@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Heart, ShoppingBag, X } from "lucide-react";
+import { Heart, Loader2, ShoppingBag, X } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
 import { Bottle } from "@/components/bottle";
@@ -18,7 +20,37 @@ export function QuickView({
   product: Product | null;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const add = useCart((s) => s.add);
+  const [wished, setWished] = useState(false);
+  const [wishBusy, setWishBusy] = useState(false);
+
+  // Reset the heart whenever a different product is opened.
+  useEffect(() => {
+    setWished(false);
+  }, [product?.slug]);
+
+  async function toggleWishlist() {
+    if (!product) return;
+    setWishBusy(true);
+    try {
+      const res = await fetch("/api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: product.slug }),
+      });
+      if (res.status === 401) {
+        router.push(`/login?callbackUrl=/product/${product.slug}`);
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setWished(data.wishlisted);
+      }
+    } finally {
+      setWishBusy(false);
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -100,8 +132,17 @@ export function QuickView({
                   {formatPrice(product.price)}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 text-gold transition-colors hover:bg-gold/10">
-                    <Heart size={18} />
+                  <button
+                    onClick={toggleWishlist}
+                    disabled={wishBusy}
+                    aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 text-gold transition-colors hover:bg-gold/10 disabled:opacity-60"
+                  >
+                    {wishBusy ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Heart size={18} className={wished ? "fill-current" : ""} />
+                    )}
                   </button>
                   <Button
                     variant="gold"

@@ -55,6 +55,7 @@ export interface AccountWishlistItem {
   price: number;
   distillery: string;
   category: CategorySlug;
+  images?: string[];
   palette: { glass: string; liquid: string; label: string };
 }
 
@@ -231,7 +232,7 @@ function Wishlist({ items }: { items: AccountWishlistItem[] }) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {items.map((p) => (
             <div key={p.id} className="rounded-2xl border border-hairline bg-night/40 p-4 text-center">
-              <div className="mx-auto h-28">
+              <div className="flex h-28 items-center justify-center">
                 <Bottle product={p} />
               </div>
               <p className="mt-3 font-display text-sm text-cream">{p.name}</p>

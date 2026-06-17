@@ -84,6 +84,7 @@ export default async function AccountPage() {
           price: Number(w.product.price),
           distillery: w.product.distillery,
           category: (w.product.category?.slug ?? "whiskey") as CategorySlug,
+          images: w.product.images,
           palette: {
             glass: w.product.paletteGlass,
             liquid: w.product.paletteLiquid,

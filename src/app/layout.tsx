@@ -48,6 +48,7 @@ export const metadata: Metadata = {
     siteName: "Nocturne",
   },
   twitter: { card: "summary_large_image", title: "Nocturne — Premium Spirits" },
+  verification: { google: "C0i0lgPc246W8LqT_EkOVQk3UzVrAQI0pmKXXtNtmMU" },
 };
 
 export const viewport: Viewport = {
