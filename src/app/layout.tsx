@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: "BottleExpress — Premium Spirits Delivered",
     description: "BottleExpress delivers the world's finest whiskey, wine and rare spirits.",
   },
-  verification: { google: "C0i0lgPc246W8LqT_EkOVQk3UzVrAQI0pmKXXtNtmMU" },
+  verification: { google: "KT5I5i7MEQPX61Z5EKH-E6OHrJsKp_fLMvC3iM3uo5U" },
 };
 
 export const viewport: Viewport = {
