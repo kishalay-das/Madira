@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getMode } from "@/lib/mode";
 import { StandardHome } from "@/components/sections/standard-home";
 import { Hero } from "@/components/sections/hero";
@@ -11,6 +12,12 @@ import { Reviews } from "@/components/sections/reviews";
 import { AppPromo } from "@/components/sections/app-promo";
 
 export const dynamic = "force-dynamic";
+
+// Home page title is the brand name only (absolute → bypasses the
+// "%s · Nocturne" template).
+export const metadata: Metadata = {
+  title: { absolute: "Madeera" },
+};
 
 export default async function Home() {
   const mode = await getMode();

@@ -32,6 +32,19 @@ export const metadata: Metadata = {
   description:
     "A modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered with concierge care.",
   keywords: [
+    // Brand (unique) + common misspellings so wrong spellings still resolve
+    "Madeera",
+    "Madeera spirits",
+    "Madeera liquor",
+    "Madeera drinks",
+    "Madeera whiskey",
+    "Madeera wine",
+    "Madira",
+    "Madeira",
+    "Madera",
+    "Madeeraa",
+    "Madeera spirits delivery",
+    // Category / intent
     "premium spirits delivery",
     "luxury whiskey",
     "rare wine",
