@@ -97,6 +97,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No valid items" }, { status: 422 });
   }
 
+  // Stock availability — never let an order exceed what's on hand. The
+  // authoritative re-check happens inside the transaction (guards against
+  // concurrent orders); this pre-check returns a friendly message.
+  const unavailable = lineItems.filter((li) => li.product.stock < li.qty);
+  if (unavailable.length > 0) {
+    return NextResponse.json(
+      {
+        error: "Some items are out of stock",
+        items: unavailable.map((li) => ({
+          slug: li.product.slug,
+          name: li.product.name,
+          available: li.product.stock,
+        })),
+      },
+      { status: 409 }
+    );
+  }
+
   const subtotal = lineItems.reduce(
     (sum, li) => sum + Number(li.product.price) * li.qty,
     0
@@ -128,8 +146,25 @@ export async function POST(request: Request) {
 
   const number = `NOC-${100000 + Math.floor(Math.random() * 899999)}`;
 
-  const order = await prisma.$transaction(async (tx) => {
-    const created = await tx.order.create({
+  // Sentinel thrown inside the transaction when a concurrent order drained
+  // stock between our pre-check and the decrement — rolls everything back.
+  const OUT_OF_STOCK = "OUT_OF_STOCK";
+
+  let order;
+  try {
+    order = await prisma.$transaction(async (tx) => {
+      // Decrement stock atomically. `updateMany` with a `stock >= qty` guard
+      // only matches (and decrements) when enough is on hand; count 0 means a
+      // concurrent order beat us to it.
+      for (const li of lineItems) {
+        const res = await tx.product.updateMany({
+          where: { id: li.product.id, stock: { gte: li.qty } },
+          data: { stock: { decrement: li.qty } },
+        });
+        if (res.count === 0) throw new Error(OUT_OF_STOCK);
+      }
+
+      const created = await tx.order.create({
       data: {
         number,
         userId: session.user.id,
@@ -172,7 +207,16 @@ export async function POST(request: Request) {
     });
 
     return created;
-  });
+    });
+  } catch (e) {
+    if (e instanceof Error && e.message === OUT_OF_STOCK) {
+      return NextResponse.json(
+        { error: "Some items just went out of stock. Please review your cart." },
+        { status: 409 }
+      );
+    }
+    throw e;
+  }
 
   return NextResponse.json(
     {

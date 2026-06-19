@@ -52,6 +52,7 @@ export function ProductDetail({
   const [angle, setAngle] = useState(0);
   const dragging = useRef(false);
   const lastX = useRef(0);
+  const outOfStock = product.stock <= 0;
 
   async function toggleWishlist() {
     if (!isAuthed) {
@@ -180,8 +181,14 @@ export function ProductDetail({
               </span>
             )}
             <span className="font-display text-3xl text-cream">{formatPrice(product.price)}</span>
-            {product.stock <= 8 && (
-              <span className="text-xs text-burgundy">Only {product.stock} left</span>
+            {outOfStock ? (
+              <span className="text-xs font-medium uppercase tracking-wide text-burgundy">
+                Out of stock
+              </span>
+            ) : (
+              product.stock < 10 && (
+                <span className="text-xs text-burgundy">Only {product.stock} left</span>
+              )
             )}
           </div>
 
@@ -205,16 +212,17 @@ export function ProductDetail({
           {/* Qty + add */}
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <div className="flex items-center rounded-full border border-hairline">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-12 w-12 items-center justify-center text-parchment hover:text-gold" aria-label="Decrease">
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={outOfStock} className="flex h-12 w-12 items-center justify-center text-parchment hover:text-gold disabled:cursor-not-allowed disabled:opacity-40" aria-label="Decrease">
                 <Minus size={16} />
               </button>
               <span className="w-10 text-center font-display text-lg text-cream">{qty}</span>
-              <button onClick={() => setQty((q) => q + 1)} className="flex h-12 w-12 items-center justify-center text-parchment hover:text-gold" aria-label="Increase">
+              <button onClick={() => setQty((q) => Math.min(product.stock, q + 1))} disabled={outOfStock || qty >= product.stock} className="flex h-12 w-12 items-center justify-center text-parchment hover:text-gold disabled:cursor-not-allowed disabled:opacity-40" aria-label="Increase">
                 <Plus size={16} />
               </button>
             </div>
-            <Button variant="gold" size="lg" className="order-last w-full whitespace-nowrap sm:order-0 sm:w-auto sm:flex-1" onClick={() => add(product, qty)}>
-              <ShoppingBag size={18} /> Add to Cart · {formatPrice(product.price * qty)}
+            <Button variant="gold" size="lg" disabled={outOfStock} className="order-last w-full whitespace-nowrap sm:order-0 sm:w-auto sm:flex-1" onClick={() => add(product, qty)}>
+              <ShoppingBag size={18} />{" "}
+              {outOfStock ? "Out of Stock" : `Add to Cart · ${formatPrice(product.price * qty)}`}
             </Button>
             <button
               onClick={toggleWishlist}

@@ -91,7 +91,12 @@ export function QuickView({
                   <Badge tone={product.badge}>{product.badge}</Badge>
                 </div>
               )}
-              <div className="h-48 animate-float sm:h-60 md:h-72">
+              {product.stock <= 0 && (
+                <div className="absolute right-5 top-5 rounded-full border border-burgundy/40 bg-night/80 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-wider text-burgundy backdrop-blur-md">
+                  Out of stock
+                </div>
+              )}
+              <div className={`h-48 animate-float sm:h-60 md:h-72 ${product.stock <= 0 ? "opacity-50 grayscale" : ""}`}>
                 <Bottle product={product} className="drop-shadow-[0_30px_50px_rgba(0,0,0,0.6)]" />
               </div>
             </div>
@@ -128,9 +133,16 @@ export function QuickView({
               </dl>
 
               <div className="mt-auto flex items-center justify-between pt-6">
-                <span className="font-display text-2xl text-cream">
-                  {formatPrice(product.price)}
-                </span>
+                <div>
+                  <span className="font-display text-2xl text-cream">
+                    {formatPrice(product.price)}
+                  </span>
+                  {product.stock > 0 && product.stock < 10 && (
+                    <span className="mt-1 block text-xs text-burgundy">
+                      Only {product.stock} left
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={toggleWishlist}
@@ -146,12 +158,13 @@ export function QuickView({
                   </button>
                   <Button
                     variant="gold"
+                    disabled={product.stock <= 0}
                     onClick={() => {
                       add(product);
                       onClose();
                     }}
                   >
-                    <ShoppingBag size={16} /> Add to Cart
+                    <ShoppingBag size={16} /> {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                 </div>
               </div>

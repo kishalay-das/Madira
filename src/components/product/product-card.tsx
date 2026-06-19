@@ -17,6 +17,8 @@ export function ProductCard({
   onQuickView?: (p: Product) => void;
 }) {
   const add = useCart((s) => s.add);
+  const outOfStock = product.stock <= 0;
+  const lowStock = !outOfStock && product.stock < 10;
 
   return (
     <div className="group luxe-card glass-dark relative flex flex-col overflow-hidden rounded-[var(--radius-luxe)]">
@@ -33,8 +35,13 @@ export function ProductCard({
             <Badge tone={product.badge}>{product.badge}</Badge>
           </div>
         )}
+        {outOfStock && (
+          <div className="absolute right-4 top-4 z-10 rounded-full border border-burgundy/40 bg-night/80 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-wider text-burgundy backdrop-blur-md">
+            Out of stock
+          </div>
+        )}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-[78%] w-auto transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2 group-hover:scale-[1.06]">
+          <div className={`h-[78%] w-auto transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2 group-hover:scale-[1.06] ${outOfStock ? "opacity-50 grayscale" : ""}`}>
             <Bottle product={product} className="drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]" />
           </div>
         </div>
@@ -82,11 +89,17 @@ export function ProductCard({
             <span className="font-display text-xl text-cream">
               {formatPrice(product.price)}
             </span>
+            {lowStock && (
+              <span className="mt-1 block text-[0.68rem] text-burgundy">
+                Only {product.stock} left
+              </span>
+            )}
           </div>
           <button
             onClick={() => add(product)}
-            aria-label={`Add ${product.name} to cart`}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 text-gold transition-all duration-500 hover:bg-gold hover:text-ink"
+            disabled={outOfStock}
+            aria-label={outOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 text-gold transition-all duration-500 hover:bg-gold hover:text-ink disabled:cursor-not-allowed disabled:border-hairline disabled:text-muted-2 disabled:hover:bg-transparent disabled:hover:text-muted-2"
           >
             <Plus size={18} />
           </button>
