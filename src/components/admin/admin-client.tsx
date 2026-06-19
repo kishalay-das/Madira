@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Box, ExternalLink, LayoutDashboard, Package, Star, Tag, Users } from "lucide-react";
+import { Box, ExternalLink, FileText, LayoutDashboard, Package, Star, Tag, Users } from "lucide-react";
 import type { AdminData, Tab } from "./types";
 import { ToastProvider } from "./shared";
 import { Dashboard } from "./modules/dashboard";
@@ -11,6 +11,7 @@ import { Orders } from "./modules/orders";
 import { Customers } from "./modules/customers";
 import { Coupons } from "./modules/coupons";
 import { Reviews } from "./modules/reviews";
+import { Blog } from "./modules/blog";
 
 const nav: { id: Tab; label: string; Icon: typeof Box }[] = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
@@ -19,6 +20,7 @@ const nav: { id: Tab; label: string; Icon: typeof Box }[] = [
   { id: "customers", label: "Customers", Icon: Users },
   { id: "coupons", label: "Coupons", Icon: Tag },
   { id: "reviews", label: "Reviews", Icon: Star },
+  { id: "blog", label: "Blog", Icon: FileText },
 ];
 
 export function AdminClient({ data }: { data: AdminData }) {
@@ -70,6 +72,7 @@ export function AdminClient({ data }: { data: AdminData }) {
             {tab === "customers" && <Customers data={data} />}
             {tab === "coupons" && <Coupons data={data} />}
             {tab === "reviews" && <Reviews data={data} />}
+            {tab === "blog" && <Blog data={data} />}
           </div>
         </div>
       </div>

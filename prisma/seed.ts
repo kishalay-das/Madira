@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { categories, allProducts as products } from "../src/lib/data";
+import { blogSeed } from "../src/lib/blog-seed";
 
 const prisma = new PrismaClient();
 
@@ -20,9 +21,15 @@ async function main() {
   await prisma.review.deleteMany();
   await prisma.address.deleteMany();
   await prisma.coupon.deleteMany();
+  await prisma.blogPost.deleteMany();
   await prisma.user.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+
+  // --- Blog posts ---
+  for (const post of blogSeed) {
+    await prisma.blogPost.create({ data: post });
+  }
 
   // --- Users ---
   const passwordHash = await bcrypt.hash("nocturne8", 10);

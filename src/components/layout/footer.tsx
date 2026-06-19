@@ -60,6 +60,7 @@ const columns = [
     title: "Company",
     links: [
       { label: "Our Story", href: "/our-story" },
+      { label: "Blog", href: "/blog" },
       { label: "Authenticity Promise", href: "/authenticity-promise" },
       { label: "Press", href: "/press" },
       { label: "Sustainability", href: "/sustainability" },

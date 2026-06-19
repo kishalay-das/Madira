@@ -52,6 +52,7 @@ export default async function AdminPage() {
     orderCount,
     customerCount,
     cats,
+    blogPosts,
     analyticsOrders,
   ] = await Promise.all([
     prisma.product.findMany({ include: { category: true }, orderBy: { createdAt: "asc" } }),
@@ -111,6 +112,7 @@ export default async function AdminPage() {
       },
       orderBy: { name: "asc" },
     }),
+    prisma.blogPost.findMany({ orderBy: { publishedAt: "desc" } }),
     // Lightweight slice for dashboard analytics (trends, segment split,
     // best sellers). Capped so the query stays cheap on large catalogs.
     prisma.order.findMany({
@@ -340,6 +342,18 @@ export default async function AdminPage() {
           date: fmtDate(r.createdAt),
         })),
         categoryOptions: cats.map((c) => ({ slug: c.slug, name: c.name })),
+        blog: blogPosts.map((b) => ({
+          id: b.id,
+          slug: b.slug,
+          title: b.title,
+          excerpt: b.excerpt ?? "",
+          content: b.content,
+          coverImage: b.coverImage,
+          author: b.author,
+          tags: b.tags,
+          published: b.published,
+          date: fmtDate(b.publishedAt),
+        })),
       }}
     />
   );

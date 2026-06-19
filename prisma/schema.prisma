@@ -212,3 +212,20 @@ model Coupon {
 
   orders Order[]
 }
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String?
+  content     String   @db.Text // markdown-ish plain text
+  coverImage  String? // Cloudinary URL
+  author      String   @default("BottleExpress")
+  tags        String[]
+  published   Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, publishedAt])
+}

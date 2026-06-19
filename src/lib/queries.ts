@@ -159,3 +159,62 @@ export async function getCategories(): Promise<Category[]> {
   const rows = await prisma.category.findMany({ orderBy: { name: "asc" } });
   return rows.map(toCategory);
 }
+
+/* ------------------------------------------------------------------ *
+ * Blog
+ * ------------------------------------------------------------------ */
+
+export interface BlogPostView {
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  coverImage: string | null;
+  author: string;
+  tags: string[];
+  date: string; // ISO publishedAt
+}
+
+function toBlogPost(r: {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  coverImage: string | null;
+  author: string;
+  tags: string[];
+  publishedAt: Date;
+}): BlogPostView {
+  return {
+    slug: r.slug,
+    title: r.title,
+    excerpt: r.excerpt ?? "",
+    content: r.content,
+    coverImage: r.coverImage,
+    author: r.author,
+    tags: r.tags,
+    date: r.publishedAt.toISOString(),
+  };
+}
+
+export async function getBlogPosts(): Promise<BlogPostView[]> {
+  const rows = await prisma.blogPost.findMany({
+    where: { published: true },
+    orderBy: { publishedAt: "desc" },
+  });
+  return rows.map(toBlogPost);
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPostView | null> {
+  const row = await prisma.blogPost.findUnique({ where: { slug } });
+  if (!row || !row.published) return null;
+  return toBlogPost(row);
+}
+
+export async function getBlogSlugs(): Promise<string[]> {
+  const rows = await prisma.blogPost.findMany({
+    where: { published: true },
+    select: { slug: true },
+  });
+  return rows.map((r) => r.slug);
+}

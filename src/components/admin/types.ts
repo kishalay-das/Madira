@@ -4,7 +4,8 @@ export type Tab =
   | "orders"
   | "customers"
   | "coupons"
-  | "reviews";
+  | "reviews"
+  | "blog";
 
 export interface AdminData {
   kpis: {
@@ -119,7 +120,21 @@ export interface AdminData {
     date: string;
   }[];
   categoryOptions: { slug: string; name: string }[];
+  blog: {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    coverImage: string | null;
+    author: string;
+    tags: string[];
+    published: boolean;
+    date: string;
+  }[];
 }
+
+export type AdminBlogPost = AdminData["blog"][number];
 
 export type AdminOrder = AdminData["orders"][number];
 export type AdminCustomer = AdminData["customers"][number];
