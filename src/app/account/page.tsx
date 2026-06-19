@@ -77,6 +77,7 @@ export default async function AccountPage() {
             .join(", "),
           primary: a.isPrimary,
           line1: a.line1,
+          landmark: a.landmark ?? "",
           city: a.city,
           postalCode: a.postalCode,
           phone: a.phone ?? "",

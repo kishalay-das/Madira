@@ -53,6 +53,7 @@ export interface AccountAddress {
   primary: boolean;
   // Raw fields for prefilling the edit form.
   line1: string;
+  landmark: string;
   city: string;
   postalCode: string;
   phone: string;
@@ -260,6 +261,21 @@ function Orders({ orders }: { orders: AccountOrder[] }) {
 }
 
 function Wishlist({ items }: { items: AccountWishlistItem[] }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function remove(p: AccountWishlistItem) {
+    setBusy(p.id);
+    // POST toggles; since the item is wishlisted, this removes it.
+    const res = await fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: p.slug }),
+    });
+    setBusy(null);
+    if (res.ok) router.refresh();
+  }
+
   return (
     <Card>
       <H>Your Wishlist</H>
@@ -268,7 +284,15 @@ function Wishlist({ items }: { items: AccountWishlistItem[] }) {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {items.map((p) => (
-            <div key={p.id} className="rounded-2xl border border-hairline bg-night/40 p-4 text-center">
+            <div key={p.id} className="relative rounded-2xl border border-hairline bg-night/40 p-4 text-center">
+              <button
+                onClick={() => remove(p)}
+                disabled={busy === p.id}
+                aria-label={`Remove ${p.name} from wishlist`}
+                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-hairline text-muted-2 transition-colors hover:border-burgundy/40 hover:text-burgundy disabled:opacity-50"
+              >
+                {busy === p.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              </button>
               <div className="flex h-28 items-center justify-center">
                 <Bottle product={p} />
               </div>
@@ -370,6 +394,7 @@ function AddressModal({
   const [form, setForm] = useState({
     label: editing?.label ?? "Home",
     line1: editing?.line1 ?? "",
+    landmark: editing?.landmark ?? "",
     city: editing?.city ?? "",
     postalCode: editing?.postalCode ?? "",
     phone: editing?.phone ?? "",
@@ -416,6 +441,7 @@ function AddressModal({
         <div className="space-y-4">
           <AccountField label="Label" value={form.label} onChange={(v) => set("label", v)} required />
           <AccountField label="Street address" value={form.line1} onChange={(v) => set("line1", v)} placeholder="1 Park Avenue" required />
+          <AccountField label="Landmark (optional)" value={form.landmark} onChange={(v) => set("landmark", v)} placeholder="Near Central Park" />
           <div className="grid grid-cols-2 gap-4">
             <AccountField label="City" value={form.city} onChange={(v) => set("city", v)} placeholder="New York" required />
             <AccountField label="Postal code" value={form.postalCode} onChange={(v) => set("postalCode", v)} placeholder="10016" required />
