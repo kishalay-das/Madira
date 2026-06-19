@@ -525,6 +525,40 @@ html.theme-ready *:not(.no-theme-anim)::after {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Branded "filling bottle" loader */
+@keyframes loaderWave {
+  to { transform: translateX(-64px); }
+}
+@keyframes loaderBubble {
+  0% { transform: translateY(0); opacity: 0; }
+  25% { opacity: 0.7; }
+  90% { opacity: 0.2; }
+  100% { transform: translateY(-30px); opacity: 0; }
+}
+/* liquid level rising / falling (breathing fill) */
+@keyframes loaderFill {
+  0%, 100% { transform: translateY(7px); }
+  50% { transform: translateY(-6px); }
+}
+/* diagonal light sweep across the glass */
+@keyframes loaderShine {
+  0% { transform: translateX(-26px); opacity: 0; }
+  35% { opacity: 0.55; }
+  65% { opacity: 0.55; }
+  100% { transform: translateX(66px); opacity: 0; }
+}
+/* droplet dripping from the cap into the bottle */
+@keyframes loaderDrip {
+  0% { transform: translateY(0) scaleY(0.7); opacity: 0; }
+  12% { opacity: 1; }
+  72% { opacity: 1; }
+  100% { transform: translateY(33px) scaleY(1.2); opacity: 0; }
+}
+/* moving gradient shimmer for the wordmark */
+@keyframes loaderTextShimmer {
+  to { background-position: 200% center; }
+}
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
