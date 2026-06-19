@@ -41,6 +41,9 @@ export default async function CartPage() {
           city: a.city,
           postalCode: a.postalCode,
           primary: a.isPrimary,
+          line1: a.line1,
+          landmark: a.landmark ?? "",
+          phone: a.phone ?? "",
         }))}
       />
     </div>

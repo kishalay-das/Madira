@@ -40,6 +40,10 @@ export interface CheckoutAddress {
   city: string;
   postalCode: string;
   primary: boolean;
+  // Raw fields for prefilling the edit form.
+  line1: string;
+  landmark: string;
+  phone: string;
 }
 
 export function CheckoutClient({
@@ -65,27 +69,59 @@ export function CheckoutClient({
     addresses.find((a) => a.primary)?.id ?? addresses[0]?.id ?? null
   );
   const [addingAddr, setAddingAddr] = useState(addresses.length === 0);
+  // Set when editing an existing address (vs. adding a new one).
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [savingAddr, setSavingAddr] = useState(false);
   const [addrErr, setAddrErr] = useState<string | null>(null);
-  const [newAddr, setNewAddr] = useState({
+  const emptyAddr = {
     label: "Home",
     line1: "",
     landmark: "",
     city: "",
     postalCode: "",
     phone: "",
-  });
+  };
+  const [newAddr, setNewAddr] = useState(emptyAddr);
+
+  function startEdit(a: CheckoutAddress) {
+    setEditingId(a.id);
+    setNewAddr({
+      label: a.label,
+      line1: a.line1,
+      landmark: a.landmark,
+      city: a.city,
+      postalCode: a.postalCode,
+      phone: a.phone,
+    });
+    setAddrErr(null);
+    setAddingAddr(true);
+  }
+
+  function cancelAddrForm() {
+    setAddingAddr(false);
+    setEditingId(null);
+    setNewAddr(emptyAddr);
+    setAddrErr(null);
+  }
 
   async function saveAddress(e: React.FormEvent) {
     e.preventDefault();
     setAddrErr(null);
     setSavingAddr(true);
     try {
-      const res = await fetch("/api/addresses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newAddr, isPrimary: addresses.length === 0 }),
-      });
+      // Editing keeps the address's existing primary flag; a brand-new address
+      // becomes primary only if it's the customer's first.
+      const isPrimary = editingId
+        ? (addresses.find((a) => a.id === editingId)?.primary ?? false)
+        : addresses.length === 0;
+      const res = await fetch(
+        editingId ? `/api/addresses/${editingId}` : "/api/addresses",
+        {
+          method: editingId ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...newAddr, isPrimary }),
+        }
+      );
       if (res.status === 401) {
         router.push("/login?callbackUrl=/cart");
         return;
@@ -96,15 +132,7 @@ export function CheckoutClient({
       }
       const data = await res.json();
       setAddressId(data.address.id);
-      setAddingAddr(false);
-      setNewAddr({
-        label: "Home",
-        line1: "",
-        landmark: "",
-        city: "",
-        postalCode: "",
-        phone: "",
-      });
+      cancelAddrForm();
       router.refresh();
     } catch (err) {
       setAddrErr(err instanceof Error ? err.message : "Could not save address.");
@@ -287,26 +315,38 @@ export function CheckoutClient({
               {addresses.length > 0 && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {addresses.map((a) => (
-                    <button
+                    <div
                       key={a.id}
-                      type="button"
-                      onClick={() => setAddressId(a.id)}
-                      className={`rounded-2xl border p-4 text-left transition-all ${
+                      className={`relative rounded-2xl border p-4 transition-all ${
                         addressId === a.id
                           ? "border-gold bg-gold/10"
                           : "border-hairline hover:border-gold/40"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-display text-cream">{a.label}</span>
-                        {a.primary && (
-                          <span className="rounded-full border border-gold/30 px-2 py-0.5 text-[0.55rem] uppercase tracking-widest text-gold">
-                            Primary
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-xs leading-relaxed text-muted">{a.line}</p>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setAddressId(a.id)}
+                        className="block w-full pr-8 text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-display text-cream">{a.label}</span>
+                          {a.primary && (
+                            <span className="rounded-full border border-gold/30 px-2 py-0.5 text-[0.55rem] uppercase tracking-widest text-gold">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-muted">{a.line}</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startEdit(a)}
+                        aria-label={`Edit ${a.label} address`}
+                        className="absolute bottom-3 right-3 text-[0.62rem] uppercase tracking-widest text-muted transition-colors hover:text-gold"
+                      >
+                        Edit
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -364,12 +404,12 @@ export function CheckoutClient({
                   <div className="flex items-center gap-2">
                     <Button type="submit" variant="gold" size="sm" disabled={savingAddr}>
                       {savingAddr && <Loader2 size={14} className="animate-spin" />}
-                      Save address
+                      {editingId ? "Update address" : "Save address"}
                     </Button>
                     {addresses.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => setAddingAddr(false)}
+                        onClick={cancelAddrForm}
                         className="text-xs uppercase tracking-[0.16em] text-muted hover:text-cream"
                       >
                         Cancel
@@ -380,7 +420,11 @@ export function CheckoutClient({
               ) : (
                 <button
                   type="button"
-                  onClick={() => setAddingAddr(true)}
+                  onClick={() => {
+                    setEditingId(null);
+                    setNewAddr(emptyAddr);
+                    setAddingAddr(true);
+                  }}
                   className="rounded-full border border-gold/40 px-4 py-2 text-xs uppercase tracking-[0.18em] text-gold transition-colors hover:bg-gold/10"
                 >
                   + Add a new address

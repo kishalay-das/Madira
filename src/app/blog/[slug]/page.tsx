@@ -9,8 +9,15 @@ import { PostContent } from "@/components/blog/post-content";
 export const revalidate = 3600;
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const slugs = await getBlogSlugs();
-  return slugs.map((slug) => ({ slug }));
+  // Best-effort pre-render list. If the DB is unreachable at build time
+  // (e.g. Neon suspended), don't fail the whole build — posts still render
+  // on-demand and get cached via `revalidate`.
+  try {
+    const slugs = await getBlogSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
