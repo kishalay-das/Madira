@@ -443,6 +443,7 @@ function OrderDetailModal({
       title={order.number}
       subtitle={`Placed ${order.date}`}
       onClose={onClose}
+      maxWidthClass="max-w-3xl"
     >
       {/* Status changer */}
       <div className="flex items-center justify-between gap-3 rounded-xl border border-hairline bg-night/40 p-4">

@@ -363,11 +363,14 @@ export function DetailModal({
   subtitle,
   onClose,
   children,
+  maxWidthClass = "max-w-lg",
 }: {
   title: string;
   subtitle?: string;
   onClose: () => void;
   children: React.ReactNode;
+  /** Tailwind max-width class for the panel. Defaults to a compact `max-w-lg`. */
+  maxWidthClass?: string;
 }) {
   // Close on Escape for fast keyboard-driven workflows.
   useEffect(() => {
@@ -384,7 +387,9 @@ export function DetailModal({
         className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="glass-dark relative z-10 my-auto w-full max-w-lg rounded-[var(--radius-luxe)] p-6 sm:p-7">
+      <div
+        className={`glass-dark relative z-10 my-auto w-full ${maxWidthClass} rounded-[var(--radius-luxe)] p-6 sm:p-7`}
+      >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="font-display text-xl text-cream">{title}</h2>
