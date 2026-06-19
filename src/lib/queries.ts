@@ -129,7 +129,9 @@ export async function getProducts(opts: ProductQuery = {}): Promise<Product[]> {
   const rows = await prisma.product.findMany({
     where: productWhere(opts),
     include: { category: true },
-    orderBy: orderByFor(opts.sort),
+    // `id` tiebreaker keeps offset pages stable when the primary sort key
+    // (price/rating/reviewsCount) ties across many products.
+    orderBy: [orderByFor(opts.sort), { id: "asc" }],
     ...(opts.skip ? { skip: opts.skip } : {}),
     ...(opts.take ?? opts.limit ? { take: opts.take ?? opts.limit } : {}),
   });

@@ -20,7 +20,8 @@ export async function GET(request: Request) {
   const [rows, total] = await Promise.all([
     prisma.review.findMany({
       include: reviewInclude,
-      orderBy: { createdAt: "desc" },
+      // Stable tiebreaker so offset pages never skip/duplicate on equal timestamps.
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       skip,
       take,
     }),

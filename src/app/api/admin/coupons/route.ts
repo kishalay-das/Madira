@@ -17,7 +17,9 @@ export async function GET(request: Request) {
   const { page, pageSize, skip, take } = parsePageParams(sp, { defaultSize: 20 });
 
   const [rows, total] = await Promise.all([
-    prisma.coupon.findMany({ orderBy: { redemptions: "desc" }, skip, take }),
+    // Stable tiebreaker: many coupons share a redemptions value, so add `id`
+    // to keep offset pages from skipping/duplicating rows.
+    prisma.coupon.findMany({ orderBy: [{ redemptions: "desc" }, { id: "desc" }], skip, take }),
     prisma.coupon.count(),
   ]);
 

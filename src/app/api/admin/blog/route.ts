@@ -18,7 +18,8 @@ export async function GET(request: Request) {
   const { page, pageSize, skip, take } = parsePageParams(sp, { defaultSize: 20 });
 
   const [rows, total] = await Promise.all([
-    prisma.blogPost.findMany({ orderBy: { publishedAt: "desc" }, skip, take }),
+    // Stable tiebreaker so offset pages never skip/duplicate on equal dates.
+    prisma.blogPost.findMany({ orderBy: [{ publishedAt: "desc" }, { id: "desc" }], skip, take }),
     prisma.blogPost.count(),
   ]);
 

@@ -56,7 +56,8 @@ export async function GET(request: Request) {
     prisma.order.findMany({
       where,
       include: orderInclude,
-      orderBy: { createdAt: "desc" },
+      // Stable tiebreaker so offset pages never skip/duplicate on equal timestamps.
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       skip,
       take,
     }),
