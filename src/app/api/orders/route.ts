@@ -22,7 +22,10 @@ const orderSchema = z.object({
   // the customer denied permission or is on an insecure/unsupported context).
   deliveryLat: z.number().min(-90).max(90).optional(),
   deliveryLng: z.number().min(-180).max(180).optional(),
-  deliveryAccuracy: z.number().min(0).max(100000).optional(),
+  // Accuracy is informational only. Desktop / WiFi / IP-based geolocation can
+  // report radii of hundreds of thousands of metres, so keep the cap generous —
+  // a loose pin should never block an order.
+  deliveryAccuracy: z.number().min(0).max(10_000_000).optional(),
 });
 
 const slotMap = {
