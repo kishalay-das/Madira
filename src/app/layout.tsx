@@ -7,6 +7,7 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider, themeInitScript } from "@/components/theme/theme-provider";
 import { ModeProvider, modeInitScript } from "@/components/mode/mode-provider";
+import { SITE_URL as SITE } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,12 +22,6 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
-// Production URL. Override with NEXT_PUBLIC_SITE_URL in the environment
-// (e.g. once a custom domain is connected); falls back to the live Vercel URL.
-const SITE = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app"
-).replace(/\/+$/, "");
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
@@ -36,22 +31,13 @@ export const metadata: Metadata = {
   description:
     "BottleExpress is a modern luxury house for the world's finest whiskey, wine, champagne and rare spirits — sourced, authenticated and delivered to your doorstep with concierge care.",
   alternates: { canonical: "/" },
+  // Note: Google ignores the keywords meta tag; kept concise for Bing/clarity.
   keywords: [
-    // Brand (unique) + common misspellings so wrong spellings still resolve
     "BottleExpress",
-    "BottleExpress spirits",
-    "BottleExpress liquor",
-    "BottleExpress drinks",
-    "BottleExpress whiskey",
-    "BottleExpress wine",
     "Bottle Express",
-    "BottleExpress delivery",
-    "bottle express liquor",
-    "BottleExpress spirits delivery",
-    // Category / intent
     "premium spirits delivery",
-    "luxury whiskey",
-    "rare wine",
+    "whiskey delivery",
+    "wine delivery",
     "champagne delivery",
     "alcohol delivery",
   ],
@@ -70,7 +56,12 @@ export const metadata: Metadata = {
     title: "BottleExpress — Premium Spirits Delivered",
     description: "BottleExpress delivers the world's finest whiskey, wine and rare spirits.",
   },
-  verification: { google: "KT5I5i7MEQPX61Z5EKH-E6OHrJsKp_fLMvC3iM3uo5U" },
+  verification: {
+    google: [
+      "KT5I5i7MEQPX61Z5EKH-E6OHrJsKp_fLMvC3iM3uo5U",
+      "hzn2Tp7sg0P5gefvWWYQrJAwacnyO1kL5TwfFcpLGqo",
+    ],
+  },
 };
 
 export const viewport: Viewport = {

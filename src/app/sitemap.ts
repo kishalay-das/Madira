@@ -1,12 +1,11 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/lib/data";
+import { getProductSlugs, getCategories } from "@/lib/queries";
+import { SITE_URL as BASE } from "@/lib/site";
 
-// Keep in sync with metadataBase in layout.tsx.
-const BASE = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://kubo-demo-fawn.vercel.app"
-).replace(/\/+$/, "");
+// Generated at request time (not build) so it can read live data from the DB.
+export const dynamic = "force-dynamic";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   // Public, indexable routes. Account/admin/login/register and the cart are
@@ -27,19 +26,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/cookies", priority: 0.3 },
   ];
 
-  const staticRoutes = routes.map(({ path, priority }) => ({
+  const staticRoutes: MetadataRoute.Sitemap = routes.map(({ path, priority }) => ({
     url: `${BASE}${path}`,
     lastModified: now,
-    changeFrequency: "weekly" as const,
+    changeFrequency: "weekly",
     priority,
   }));
 
-  const productRoutes = products.map((p) => ({
-    url: `${BASE}/product/${p.slug}`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+  // Live product + category pages from the database. Falls back to just the
+  // static routes if the DB is unreachable, so the sitemap never 500s.
+  let dynamicRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const [slugs, categories] = await Promise.all([
+      getProductSlugs(),
+      getCategories(),
+    ]);
+    const productRoutes: MetadataRoute.Sitemap = slugs.map((slug) => ({
+      url: `${BASE}/product/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
+    const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
+      url: `${BASE}/shop?category=${c.slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+    dynamicRoutes = [...categoryRoutes, ...productRoutes];
+  } catch {
+    dynamicRoutes = [];
+  }
 
-  return [...staticRoutes, ...productRoutes];
+  return [...staticRoutes, ...dynamicRoutes];
 }
