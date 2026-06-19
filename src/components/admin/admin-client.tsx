@@ -29,9 +29,9 @@ export function AdminClient({ data }: { data: AdminData }) {
   return (
     <ToastProvider>
       <div className="min-h-screen">
-        <div className="container-luxe grid grid-cols-1 gap-8 py-12 lg:grid-cols-[230px_1fr]">
+        <div className="container-luxe grid grid-cols-1 gap-8 pb-12 pt-6 lg:grid-cols-[230px_1fr]">
           <aside>
-            <div className="glass-dark rounded-[var(--radius-luxe)] p-4 lg:sticky lg:top-28 lg:p-5">
+            <div className="glass-dark rounded-[var(--radius-luxe)] p-4 lg:sticky lg:top-6 lg:p-5">
               <p className="px-3 pb-4 font-display text-lg tracking-[0.2em] text-cream">
                 BottleExpress
                 <span className="block text-[0.55rem] tracking-[0.3em] text-gold">ADMIN CONSOLE</span>
