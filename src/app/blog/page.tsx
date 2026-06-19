@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getBlogPosts } from "@/lib/queries";
+import { getBlogPosts, countBlogPosts } from "@/lib/queries";
+import { Pagination } from "@/components/ui/pagination";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,26 @@ const fmt = (iso: string) =>
     day: "numeric",
   });
 
-export default async function BlogPage() {
-  const posts = await getBlogPosts();
-  const [featured, ...rest] = posts;
+const PAGE_SIZE = 9;
+
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
+
+  const [posts, total] = await Promise.all([
+    getBlogPosts({ skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
+    countBlogPosts(),
+  ]);
+
+  // Featured-hero treatment only on page 1. On later pages, render every post
+  // in the grid so none is skipped.
+  const featured = page === 1 ? posts[0] : undefined;
+  const rest = page === 1 ? posts.slice(1) : posts;
+  const pageCount = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="container-luxe py-14 md:py-20">
@@ -39,7 +57,7 @@ export default async function BlogPage() {
         </p>
       </header>
 
-      {posts.length === 0 ? (
+      {total === 0 ? (
         <p className="text-sm text-muted">No posts yet — check back soon.</p>
       ) : (
         <div className="space-y-10">
@@ -124,6 +142,12 @@ export default async function BlogPage() {
               ))}
             </div>
           )}
+
+          <Pagination
+            page={page}
+            pageCount={pageCount}
+            hrefFor={(p) => (p <= 1 ? "/blog" : `/blog?page=${p}`)}
+          />
         </div>
       )}
     </div>

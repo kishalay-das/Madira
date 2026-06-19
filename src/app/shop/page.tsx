@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 import { ShopClient } from "@/components/shop/shop-client";
-import { getCategories, getProducts } from "@/lib/queries";
+import {
+  getCategories,
+  getProducts,
+  countProducts,
+  getShopFacets,
+  type ProductSort,
+} from "@/lib/queries";
 import { getMode, segmentForMode } from "@/lib/mode";
 
 export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 12;
+const PRICE_MAX = 2000;
+const SORTS: ProductSort[] = ["popular", "rating", "price-asc", "price-desc", "newest"];
 
 export const metadata: Metadata = {
   title: "Shop the Collection",
@@ -14,13 +24,34 @@ export const metadata: Metadata = {
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    q?: string;
+    sort?: string;
+    maxPrice?: string;
+    page?: string;
+  }>;
 }) {
-  const { category, q } = await searchParams;
+  const { category, q, sort: sortRaw, maxPrice: maxPriceRaw, page: pageRaw } =
+    await searchParams;
   const mode = await getMode();
-  const [products, categories] = await Promise.all([
-    getProducts({ segment: segmentForMode(mode) }),
+  const segment = segmentForMode(mode);
+
+  const sort = (SORTS.includes(sortRaw as ProductSort) ? sortRaw : "popular") as ProductSort;
+  const maxPriceNum = Number(maxPriceRaw);
+  const maxPrice =
+    Number.isFinite(maxPriceNum) && maxPriceNum > 0 && maxPriceNum < PRICE_MAX
+      ? maxPriceNum
+      : undefined;
+  const pageNum = Number(pageRaw);
+  const page = Number.isFinite(pageNum) && pageNum >= 1 ? Math.floor(pageNum) : 1;
+
+  const filter = { segment, category, q, sort, maxPrice };
+  const [products, total, categories, facets] = await Promise.all([
+    getProducts({ ...filter, skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
+    countProducts(filter),
     getCategories(),
+    getShopFacets(segment),
   ]);
 
   const isPremium = mode === "premium";
@@ -41,11 +72,17 @@ export default async function ShopPage({
       </header>
 
       <ShopClient
-        key={`${mode}_${category ?? "all"}_${q ?? ""}`}
-        initialCategory={category}
-        initialQuery={q}
+        key={mode}
+        category={category ?? "all"}
+        query={q ?? ""}
+        sort={sort}
+        maxPrice={maxPrice ?? PRICE_MAX}
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={total}
         products={products}
         categories={categories}
+        facets={facets}
       />
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ImagePlus,
   LayoutGrid,
@@ -32,6 +31,9 @@ import {
   uploadToCloudinary,
   useToast,
 } from "../shared";
+import { Pagination } from "@/components/ui/pagination";
+
+const PAGE_SIZE = 20;
 
 /* ------------------------------------------------------------------ *
  * Types
@@ -199,7 +201,6 @@ function BulkBar({ count, onDelete, onClear, deleting }: BulkBarProps) {
  * ------------------------------------------------------------------ */
 
 export function Products({ data }: { data: AdminData }) {
-  const router = useRouter();
   const toast = useToast();
 
   const [busy, setBusy] = useState<string | null>(null);
@@ -212,16 +213,48 @@ export function Products({ data }: { data: AdminData }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const counts = {
+  // Server-paginated state
+  const [page, setPage] = useState(1);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState({
     PREMIUM: data.products.filter((p) => p.segment === "PREMIUM").length,
     STANDARD: data.products.filter((p) => p.segment === "STANDARD").length,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page), segment: seg });
+    const res = await fetch(`/api/admin/products?${params.toString()}`);
+    if (res.ok) {
+      const d = await res.json();
+      setProducts(d.items);
+      setTotal(d.total);
+      setCounts(d.counts);
+    }
+    setLoading(false);
+  }, [page, seg]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // The fetched page is already segment-filtered server-side.
+  const shown = products;
+
+  // Changing segment resets to the first page.
+  const onSeg = (v: "PREMIUM" | "STANDARD") => {
+    setSeg(v);
+    setPage(1);
   };
-  const shown = data.products.filter((p) => p.segment === seg);
 
   // Clear selection when segment changes
   useEffect(() => {
     setSelected(new Set());
   }, [seg]);
+
+  const refresh = () => load();
 
   // --- Single delete ---
   async function remove(id: string) {
@@ -235,7 +268,7 @@ export function Products({ data }: { data: AdminData }) {
       toast("Product deleted.", "success");
     }
     setBusy(null);
-    router.refresh();
+    load();
   }
 
   // --- Open modal for editing ---
@@ -275,7 +308,7 @@ export function Products({ data }: { data: AdminData }) {
     if (failed > 0) toast(`${failed} product${failed > 1 ? "s" : ""} could not be deleted (may be referenced by orders).`, "error");
     setSelected(new Set());
     setBulkDeleting(false);
-    router.refresh();
+    load();
   }
 
   // --- Checkbox helpers ---
@@ -298,8 +331,6 @@ export function Products({ data }: { data: AdminData }) {
     });
   }
 
-  const refresh = () => router.refresh();
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -315,7 +346,7 @@ export function Products({ data }: { data: AdminData }) {
 
       {/* Toolbar: segment toggle + view toggle */}
       <div className="flex flex-wrap items-center gap-3">
-        <SegmentToggle value={seg} onChange={setSeg} counts={counts} />
+        <SegmentToggle value={seg} onChange={onSeg} counts={counts} />
         <div className="ml-auto flex items-center gap-1 rounded-full border border-hairline bg-night/40 p-1">
           <button
             onClick={() => setViewMode("list")}
@@ -348,8 +379,14 @@ export function Products({ data }: { data: AdminData }) {
         deleting={bulkDeleting}
       />
 
-      {/* Empty state */}
-      {shown.length === 0 ? (
+      {/* Loading / empty state */}
+      {loading && shown.length === 0 ? (
+        <Panel>
+          <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted">
+            <Loader2 size={16} className="animate-spin" /> Loading products…
+          </div>
+        </Panel>
+      ) : shown.length === 0 ? (
         <Panel>
           <p className="py-6 text-center text-sm text-muted">
             No {seg.toLowerCase()} products.
@@ -488,6 +525,13 @@ export function Products({ data }: { data: AdminData }) {
         </div>
       )}
 
+      {/* Pagination (shared by both view modes) */}
+      <Pagination
+        page={page}
+        pageCount={Math.ceil(total / PAGE_SIZE)}
+        onPageChange={setPage}
+      />
+
       {/* Product Modal */}
       {modal && (
         <ProductModal
@@ -496,7 +540,7 @@ export function Products({ data }: { data: AdminData }) {
           onClose={() => setModal(null)}
           onSaved={() => {
             setModal(null);
-            router.refresh();
+            load();
           }}
         />
       )}

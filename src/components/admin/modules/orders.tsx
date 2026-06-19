@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -32,6 +31,9 @@ import {
   useToast,
 } from "../shared";
 import { DeliveryMap } from "../delivery-map";
+import { Pagination } from "@/components/ui/pagination";
+
+const PAGE_SIZE = 20;
 
 /* ------------------------------------------------------------------ *
  * Date-range helpers (all Date math; no external dep)
@@ -45,14 +47,6 @@ const DATE_RANGE_LABELS: Record<DateRange, string> = {
   "30d": "Last 30 days",
   "90d": "Last 90 days",
 };
-
-function withinRange(isoString: string, range: DateRange): boolean {
-  if (range === "all") return true;
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-  return new Date(isoString) >= cutoff;
-}
 
 /* ------------------------------------------------------------------ *
  * Pipeline config for the order timeline stepper
@@ -70,7 +64,6 @@ const PIPELINE: { status: string; label: string; Icon: typeof Circle }[] = [
  * ------------------------------------------------------------------ */
 
 export function Orders({ data }: { data: AdminData }) {
-  const router = useRouter();
   const toast = useToast();
 
   const [busy, setBusy] = useState<string | null>(null);
@@ -82,6 +75,67 @@ export function Orders({ data }: { data: AdminData }) {
   const [paymentFilter, setPaymentFilter] = useState<string>("ALL");
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Server-paginated state
+  const [page, setPage] = useState(1);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState({
+    PREMIUM: data.orders.filter((o) => o.segment === "PREMIUM").length,
+    STANDARD: data.orders.filter((o) => o.segment === "STANDARD").length,
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Debounce the search box so we don't fetch on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page), segment: seg });
+    if (statusFilter !== "ALL") params.set("status", statusFilter);
+    if (paymentFilter !== "ALL") params.set("payment", paymentFilter);
+    if (dateRange !== "all") params.set("range", dateRange);
+    if (debouncedSearch) params.set("q", debouncedSearch);
+
+    const res = await fetch(`/api/admin/orders?${params.toString()}`);
+    if (res.ok) {
+      const d = await res.json();
+      setOrders(d.items);
+      setTotal(d.total);
+      setCounts(d.counts);
+    }
+    setLoading(false);
+  }, [page, seg, statusFilter, paymentFilter, dateRange, debouncedSearch]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Changing any filter resets to the first page.
+  const onSeg = (v: "PREMIUM" | "STANDARD") => {
+    setSeg(v);
+    setPage(1);
+  };
+  const onStatus = (v: string) => {
+    setStatusFilter(v);
+    setPage(1);
+  };
+  const onPayment = (v: string) => {
+    setPaymentFilter(v);
+    setPage(1);
+  };
+  const onDateRange = (v: DateRange) => {
+    setDateRange(v);
+    setPage(1);
+  };
+  const onSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
 
   async function setStatus(id: string, status: string) {
     setBusy(id);
@@ -96,7 +150,7 @@ export function Orders({ data }: { data: AdminData }) {
     } else {
       toast("Failed to update status.", "error");
     }
-    router.refresh();
+    load();
   }
 
   async function cancelOrder(id: string) {
@@ -112,36 +166,13 @@ export function Orders({ data }: { data: AdminData }) {
     } else {
       toast("Failed to cancel order.", "error");
     }
-    router.refresh();
+    load();
   }
 
-  // Keep the open detail view in sync after a status change / refresh.
-  const live = detail ? (data.orders.find((o) => o.id === detail.id) ?? null) : null;
+  // Keep the open detail view in sync after a status change / refetch.
+  const live = detail ? (orders.find((o) => o.id === detail.id) ?? detail) : null;
 
-  const counts = {
-    PREMIUM: data.orders.filter((o) => o.segment === "PREMIUM").length,
-    STANDARD: data.orders.filter((o) => o.segment === "STANDARD").length,
-  };
-
-  // Apply all filters: segment → status → payment → date → search
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return data.orders.filter((o) => {
-      if (o.segment !== seg) return false;
-      if (statusFilter !== "ALL" && o.status !== statusFilter) return false;
-      if (paymentFilter !== "ALL" && o.paymentMethod !== paymentFilter) return false;
-      if (!withinRange(o.createdAt, dateRange)) return false;
-      if (
-        q &&
-        !o.number.toLowerCase().includes(q) &&
-        !o.customer.toLowerCase().includes(q) &&
-        !o.customerEmail.toLowerCase().includes(q)
-      )
-        return false;
-      return true;
-    });
-  }, [data.orders, seg, statusFilter, paymentFilter, dateRange, search]);
-
+  const pageCount = Math.ceil(total / PAGE_SIZE);
   const hasActiveFilters =
     statusFilter !== "ALL" ||
     paymentFilter !== "ALL" ||
@@ -153,6 +184,7 @@ export function Orders({ data }: { data: AdminData }) {
     setPaymentFilter("ALL");
     setDateRange("all");
     setSearch("");
+    setPage(1);
   }
 
   return (
@@ -160,7 +192,7 @@ export function Orders({ data }: { data: AdminData }) {
       <h1 className="font-display text-2xl text-cream sm:text-3xl">Orders</h1>
 
       {/* Segment toggle */}
-      <SegmentToggle value={seg} onChange={setSeg} counts={counts} />
+      <SegmentToggle value={seg} onChange={onSeg} counts={counts} />
 
       {/* Filter / search bar */}
       <Panel className="space-y-4">
@@ -174,7 +206,7 @@ export function Orders({ data }: { data: AdminData }) {
             type="search"
             placeholder="Search by order number, customer, or email…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)}
             className="h-11 w-full rounded-xl border border-hairline bg-night/60 pl-9 pr-4 text-sm text-cream placeholder:text-muted-2 focus:border-gold focus:outline-none"
           />
         </div>
@@ -184,7 +216,7 @@ export function Orders({ data }: { data: AdminData }) {
           {/* Status */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => onStatus(e.target.value)}
             className="h-9 rounded-full border border-hairline bg-night px-3 text-xs text-cream focus:border-gold focus:outline-none"
           >
             <option value="ALL" className="bg-night">
@@ -200,7 +232,7 @@ export function Orders({ data }: { data: AdminData }) {
           {/* Payment */}
           <select
             value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value)}
+            onChange={(e) => onPayment(e.target.value)}
             className="h-9 rounded-full border border-hairline bg-night px-3 text-xs text-cream focus:border-gold focus:outline-none"
           >
             <option value="ALL" className="bg-night">
@@ -216,7 +248,7 @@ export function Orders({ data }: { data: AdminData }) {
           {/* Date range */}
           <select
             value={dateRange}
-            onChange={(e) => setDateRange(e.target.value as DateRange)}
+            onChange={(e) => onDateRange(e.target.value as DateRange)}
             className="h-9 rounded-full border border-hairline bg-night px-3 text-xs text-cream focus:border-gold focus:outline-none"
           >
             {(["all", "7d", "30d", "90d"] as DateRange[]).map((r) => (
@@ -229,7 +261,7 @@ export function Orders({ data }: { data: AdminData }) {
           {/* Result count + clear */}
           <div className="ml-auto flex items-center gap-3">
             <span className="text-xs text-muted">
-              {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+              {total} result{total !== 1 ? "s" : ""}
             </span>
             {hasActiveFilters && (
               <button
@@ -246,7 +278,11 @@ export function Orders({ data }: { data: AdminData }) {
 
       {/* Orders list */}
       <Panel className="!p-0 overflow-hidden">
-        {filtered.length === 0 ? (
+        {loading && orders.length === 0 ? (
+          <div className="flex items-center justify-center gap-2 p-10 text-sm text-muted">
+            <Clock size={16} className="animate-pulse" /> Loading orders…
+          </div>
+        ) : orders.length === 0 ? (
           <div className="flex flex-col items-center gap-2 p-10 text-center">
             <Search size={24} className="text-muted-2" />
             <p className="text-sm text-muted">No orders match your filters.</p>
@@ -260,8 +296,8 @@ export function Orders({ data }: { data: AdminData }) {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-[color:var(--color-hairline)]">
-            {filtered.map((o) => (
+          <div className={`divide-y divide-[color:var(--color-hairline)] ${loading ? "opacity-60" : ""}`}>
+            {orders.map((o) => (
               <div
                 key={o.id}
                 className="flex flex-wrap items-center gap-3 p-4 hover:bg-(--hover-soft)"
@@ -308,6 +344,8 @@ export function Orders({ data }: { data: AdminData }) {
           </div>
         )}
       </Panel>
+
+      <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
 
       {live && (
         <OrderDetailModal

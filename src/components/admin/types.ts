@@ -136,6 +136,7 @@ export interface AdminData {
 
 export type AdminBlogPost = AdminData["blog"][number];
 
+export type AdminProduct = AdminData["products"][number];
 export type AdminOrder = AdminData["orders"][number];
 export type AdminCustomer = AdminData["customers"][number];
 export type AdminCoupon = AdminData["coupons"][number];

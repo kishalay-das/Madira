@@ -2,6 +2,7 @@ import "server-only";
 import type {
   Category as DbCategory,
   Product as DbProduct,
+  Prisma,
 } from "@prisma/client";
 import { prisma } from "./prisma";
 import type { Category, CategorySlug, Product } from "./types";
@@ -81,6 +82,31 @@ export interface ProductQuery {
   limit?: number;
   /** Storefront segment to show. Defaults to PREMIUM. */
   segment?: Segment;
+  /** Inclusive upper price bound (storefront price slider). */
+  maxPrice?: number;
+  /** Pagination — rows to skip / number to take. */
+  skip?: number;
+  take?: number;
+}
+
+/** Shared WHERE clause so getProducts and countProducts stay in sync. */
+function productWhere(opts: ProductQuery): Prisma.ProductWhereInput {
+  return {
+    segment: opts.segment ?? "PREMIUM",
+    ...(opts.category ? { category: { slug: opts.category } } : {}),
+    ...(opts.maxPrice != null ? { price: { lte: opts.maxPrice } } : {}),
+    ...(opts.q
+      ? {
+          OR: [
+            { name: { contains: opts.q, mode: "insensitive" } },
+            { distillery: { contains: opts.q, mode: "insensitive" } },
+            { categoryLabel: { contains: opts.q, mode: "insensitive" } },
+            { origin: { contains: opts.q, mode: "insensitive" } },
+            { tags: { has: opts.q } },
+          ],
+        }
+      : {}),
+  };
 }
 
 const orderByFor = (sort?: ProductSort) => {
@@ -100,26 +126,44 @@ const orderByFor = (sort?: ProductSort) => {
 
 export async function getProducts(opts: ProductQuery = {}): Promise<Product[]> {
   const rows = await prisma.product.findMany({
-    where: {
-      segment: opts.segment ?? "PREMIUM",
-      ...(opts.category ? { category: { slug: opts.category } } : {}),
-      ...(opts.q
-        ? {
-            OR: [
-              { name: { contains: opts.q, mode: "insensitive" } },
-              { distillery: { contains: opts.q, mode: "insensitive" } },
-              { categoryLabel: { contains: opts.q, mode: "insensitive" } },
-              { origin: { contains: opts.q, mode: "insensitive" } },
-              { tags: { has: opts.q } },
-            ],
-          }
-        : {}),
-    },
+    where: productWhere(opts),
     include: { category: true },
     orderBy: orderByFor(opts.sort),
-    ...(opts.limit ? { take: opts.limit } : {}),
+    ...(opts.skip ? { skip: opts.skip } : {}),
+    ...(opts.take ?? opts.limit ? { take: opts.take ?? opts.limit } : {}),
   });
   return rows.map(toProduct);
+}
+
+/** Count products matching the same filters (for pagination). */
+export async function countProducts(opts: ProductQuery = {}): Promise<number> {
+  return prisma.product.count({ where: productWhere(opts) });
+}
+
+/**
+ * Sidebar facet counts for the shop: total products in a segment plus a
+ * per-category-slug breakdown. Counts the whole segment (independent of the
+ * active search/price filters) so the category list stays a stable navigator.
+ */
+export async function getShopFacets(
+  segment: Segment
+): Promise<{ all: number; bySlug: Record<string, number> }> {
+  const [all, groups, cats] = await Promise.all([
+    prisma.product.count({ where: { segment } }),
+    prisma.product.groupBy({
+      by: ["categoryId"],
+      where: { segment },
+      _count: { _all: true },
+    }),
+    prisma.category.findMany({ select: { id: true, slug: true } }),
+  ]);
+  const idToSlug = new Map(cats.map((c) => [c.id, c.slug]));
+  const bySlug: Record<string, number> = {};
+  for (const g of groups) {
+    const slug = g.categoryId ? idToSlug.get(g.categoryId) : undefined;
+    if (slug) bySlug[slug] = g._count._all;
+  }
+  return { all, bySlug };
 }
 
 export async function getProductSlugs(): Promise<string[]> {
@@ -197,12 +241,20 @@ function toBlogPost(r: {
   };
 }
 
-export async function getBlogPosts(): Promise<BlogPostView[]> {
+export async function getBlogPosts(
+  opts: { skip?: number; take?: number } = {}
+): Promise<BlogPostView[]> {
   const rows = await prisma.blogPost.findMany({
     where: { published: true },
     orderBy: { publishedAt: "desc" },
+    ...(opts.skip ? { skip: opts.skip } : {}),
+    ...(opts.take != null ? { take: opts.take } : {}),
   });
   return rows.map(toBlogPost);
+}
+
+export async function countBlogPosts(): Promise<number> {
+  return prisma.blogPost.count({ where: { published: true } });
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPostView | null> {

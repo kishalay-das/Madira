@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ExternalLink, ImagePlus, Loader2, Pencil, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Clock, ExternalLink, ImagePlus, Loader2, Pencil, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import type { AdminBlogPost, AdminData } from "../types";
 import {
@@ -14,12 +13,35 @@ import {
   uploadToCloudinary,
   useToast,
 } from "../shared";
+import { Pagination } from "@/components/ui/pagination";
 
-export function Blog({ data }: { data: AdminData }) {
-  const router = useRouter();
+const PAGE_SIZE = 20;
+
+export function Blog({ data: _data }: { data: AdminData }) {
   const toast = useToast();
   const [modal, setModal] = useState<"create" | AdminBlogPost | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+
+  // Server-paginated state
+  const [page, setPage] = useState(1);
+  const [posts, setPosts] = useState<AdminBlogPost[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch(`/api/admin/blog?page=${page}`);
+    if (res.ok) {
+      const d = await res.json();
+      setPosts(d.items);
+      setTotal(d.total);
+    }
+    setLoading(false);
+  }, [page]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function remove(p: AdminBlogPost) {
     if (!confirm(`Delete “${p.title}”?`)) return;
@@ -28,7 +50,7 @@ export function Blog({ data }: { data: AdminData }) {
     if (res.ok) toast("Post deleted");
     else toast("Delete failed.", "error");
     setBusy(null);
-    router.refresh();
+    load();
   }
 
   async function togglePublish(p: AdminBlogPost) {
@@ -41,14 +63,16 @@ export function Blog({ data }: { data: AdminData }) {
     if (res.ok) toast(p.published ? "Unpublished" : "Published");
     else toast("Update failed.", "error");
     setBusy(null);
-    router.refresh();
+    load();
   }
+
+  const pageCount = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl text-cream sm:text-3xl">
-          Blog <span className="text-base text-muted">({data.blog.length})</span>
+          Blog <span className="text-base text-muted">({total})</span>
         </h1>
         <button
           onClick={() => setModal("create")}
@@ -59,11 +83,15 @@ export function Blog({ data }: { data: AdminData }) {
       </div>
 
       <Panel className="!p-0 overflow-hidden">
-        {data.blog.length === 0 ? (
+        {loading && posts.length === 0 ? (
+          <div className="flex items-center justify-center gap-2 p-10 text-sm text-muted">
+            <Clock size={16} className="animate-pulse" /> Loading posts…
+          </div>
+        ) : posts.length === 0 ? (
           <p className="p-8 text-center text-sm text-muted">No posts yet.</p>
         ) : (
-          <div className="divide-y divide-[color:var(--color-hairline)]">
-            {data.blog.map((p) => (
+          <div className={`divide-y divide-[color:var(--color-hairline)] ${loading ? "opacity-60" : ""}`}>
+            {posts.map((p) => (
               <div key={p.id} className="flex items-center gap-3 p-4 hover:bg-[var(--hover-soft)]">
                 <div
                   className="hidden h-12 w-16 shrink-0 rounded-lg border border-hairline bg-cover bg-center sm:block"
@@ -120,13 +148,15 @@ export function Blog({ data }: { data: AdminData }) {
         )}
       </Panel>
 
+      <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
+
       {modal && (
         <BlogModal
           editing={modal === "create" ? null : modal}
           onClose={() => setModal(null)}
           onSaved={() => {
             setModal(null);
-            router.refresh();
+            load();
           }}
         />
       )}

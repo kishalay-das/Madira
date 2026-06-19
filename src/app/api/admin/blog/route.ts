@@ -2,6 +2,32 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { isAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { serializeBlogPost } from "@/lib/admin-serialize";
+import { parsePageParams } from "@/lib/pagination";
+
+/**
+ * GET /api/admin/blog — paginated blog post list for the admin console.
+ */
+export async function GET(request: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const sp = new URL(request.url).searchParams;
+  const { page, pageSize, skip, take } = parsePageParams(sp, { defaultSize: 20 });
+
+  const [rows, total] = await Promise.all([
+    prisma.blogPost.findMany({ orderBy: { publishedAt: "desc" }, skip, take }),
+    prisma.blogPost.count(),
+  ]);
+
+  return NextResponse.json({
+    items: rows.map(serializeBlogPost),
+    total,
+    page,
+    pageSize,
+  });
+}
 
 const createSchema = z.object({
   title: z.string().min(2).max(160),

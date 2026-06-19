@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -23,6 +23,9 @@ import { formatPrice } from "@/lib/utils";
 import { Bottle } from "@/components/bottle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
+
+const ORDERS_PAGE_SIZE = 10;
 
 type Tab = "overview" | "orders" | "wishlist" | "addresses" | "membership" | "rewards";
 
@@ -197,14 +200,41 @@ function Overview({ user }: { user: AccountUser }) {
 }
 
 function Orders({ orders }: { orders: AccountOrder[] }) {
+  const [items, setItems] = useState<AccountOrder[]>(orders);
+  const [total, setTotal] = useState(orders.length);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    async function load(p: number) {
+      setLoading(true);
+      const res = await fetch(`/api/account/orders?page=${p}`);
+      if (res.ok) {
+        const d = await res.json();
+        if (active) {
+          setItems(d.items);
+          setTotal(d.total);
+        }
+      }
+      if (active) setLoading(false);
+    }
+    load(page);
+    return () => {
+      active = false;
+    };
+  }, [page]);
+
+  const pageCount = Math.ceil(total / ORDERS_PAGE_SIZE);
+
   return (
     <Card>
       <H>Order History</H>
-      {orders.length === 0 ? (
+      {items.length === 0 ? (
         <EmptyState text="No orders yet — your future bottles will appear here." />
       ) : (
-        <ul className="space-y-3">
-          {orders.map((o) => (
+        <ul className={`space-y-3 ${loading ? "opacity-60" : ""}`}>
+          {items.map((o) => (
             <li
               key={o.id}
               className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-night/40 p-5"
@@ -224,6 +254,7 @@ function Orders({ orders }: { orders: AccountOrder[] }) {
           ))}
         </ul>
       )}
+      <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
     </Card>
   );
 }

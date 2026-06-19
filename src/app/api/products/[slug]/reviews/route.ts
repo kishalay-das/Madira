@@ -2,12 +2,54 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePageParams } from "@/lib/pagination";
 
 const schema = z.object({
   rating: z.number().int().min(1).max(5),
   title: z.string().min(2).max(120),
   body: z.string().min(4).max(1000),
 });
+
+/**
+ * GET /api/products/:slug/reviews — paginated reviews for a product.
+ *
+ * Query: page, pageSize (default 8). Newest first. Returns the same shape the
+ * product page maps to the `ProductReview` type.
+ */
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const sp = new URL(request.url).searchParams;
+  const { page, pageSize, skip, take } = parsePageParams(sp, { defaultSize: 8 });
+
+  const where = { product: { slug } };
+  const [rows, total] = await Promise.all([
+    prisma.review.findMany({
+      where,
+      include: { user: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.review.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    items: rows.map((r) => ({
+      id: r.id,
+      name: r.user?.name ?? "Member",
+      rating: r.rating,
+      title: r.title,
+      body: r.body,
+      verified: r.verified,
+    })),
+    total,
+    page,
+    pageSize,
+  });
+}
 
 /** POST /api/products/:slug/reviews — add a review and refresh the aggregate. */
 export async function POST(

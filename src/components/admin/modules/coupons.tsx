@@ -1,16 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Clock, Loader2, Pencil, Trash2 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import type { AdminCoupon, AdminData } from "../types";
 import { AdminField, DetailModal, Panel } from "../shared";
+import { Pagination } from "@/components/ui/pagination";
+
+const PAGE_SIZE = 20;
 
 export function Coupons({ data }: { data: AdminData }) {
-  const router = useRouter();
   const [modal, setModal] = useState<"create" | AdminCoupon | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+
+  // Server-paginated state
+  const [page, setPage] = useState(1);
+  const [coupons, setCoupons] = useState<AdminCoupon[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch(`/api/admin/coupons?page=${page}`);
+    if (res.ok) {
+      const d = await res.json();
+      setCoupons(d.items);
+      setTotal(d.total);
+    }
+    setLoading(false);
+  }, [page]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function toggleActive(c: AdminCoupon) {
     setBusy(c.id);
@@ -20,7 +42,7 @@ export function Coupons({ data }: { data: AdminData }) {
       body: JSON.stringify({ active: !c.active }),
     });
     setBusy(null);
-    router.refresh();
+    load();
   }
 
   async function remove(c: AdminCoupon) {
@@ -32,8 +54,10 @@ export function Coupons({ data }: { data: AdminData }) {
       alert(d.error || "Delete failed.");
     }
     setBusy(null);
-    router.refresh();
+    load();
   }
+
+  const pageCount = Math.ceil(total / PAGE_SIZE);
 
   const discountLabel = (c: AdminCoupon) =>
     c.percentOff != null && c.percentOff > 0
@@ -54,11 +78,17 @@ export function Coupons({ data }: { data: AdminData }) {
         </button>
       </div>
 
-      {data.coupons.length === 0 ? (
+      {loading && coupons.length === 0 ? (
+        <Panel>
+          <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted">
+            <Clock size={16} className="animate-pulse" /> Loading coupons…
+          </div>
+        </Panel>
+      ) : coupons.length === 0 ? (
         <Panel><p className="text-sm text-muted">No coupons yet.</p></Panel>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.coupons.map((c) => (
+        <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${loading ? "opacity-60" : ""}`}>
+          {coupons.map((c) => (
             <Panel key={c.id}>
               <div className="flex items-center justify-between gap-2">
                 <span className="rounded-lg border border-dashed border-gold/40 px-3 py-1 font-mono text-sm text-gold">
@@ -103,13 +133,15 @@ export function Coupons({ data }: { data: AdminData }) {
         </div>
       )}
 
+      <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
+
       {modal && (
         <CouponModal
           editing={modal === "create" ? null : modal}
           onClose={() => setModal(null)}
           onSaved={() => {
             setModal(null);
-            router.refresh();
+            load();
           }}
         />
       )}

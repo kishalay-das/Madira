@@ -1,7 +1,65 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { isAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { productInclude, serializeProduct } from "@/lib/admin-serialize";
+import { parsePageParams } from "@/lib/pagination";
+
+/**
+ * GET /api/admin/products — paginated, segment-filtered product list for the
+ * admin console.
+ *
+ * Query: page, pageSize, segment (PREMIUM|STANDARD), q (name/distillery/
+ * categoryLabel). All filtering happens server-side so pagination reflects the
+ * full filtered set.
+ */
+export async function GET(request: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const sp = new URL(request.url).searchParams;
+  const { page, pageSize, skip, take } = parsePageParams(sp, { defaultSize: 20 });
+
+  const segment = sp.get("segment") === "STANDARD" ? "STANDARD" : "PREMIUM";
+  const q = sp.get("q")?.trim();
+
+  const where: Prisma.ProductWhereInput = {
+    segment,
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { distillery: { contains: q, mode: "insensitive" } },
+            { categoryLabel: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+
+  const [rows, total, premiumCount, standardCount] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: productInclude,
+      orderBy: { createdAt: "asc" },
+      skip,
+      take,
+    }),
+    prisma.product.count({ where }),
+    // Segment tab counts are independent of the search query / active segment.
+    prisma.product.count({ where: { segment: "PREMIUM" } }),
+    prisma.product.count({ where: { segment: "STANDARD" } }),
+  ]);
+
+  return NextResponse.json({
+    items: rows.map(serializeProduct),
+    total,
+    page,
+    pageSize,
+    counts: { PREMIUM: premiumCount, STANDARD: standardCount },
+  });
+}
 
 const csv = z
   .array(z.string().trim().min(1))

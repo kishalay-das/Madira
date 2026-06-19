@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
-import type { Category, CategorySlug, Product } from "@/lib/types";
+import type { Category, Product } from "@/lib/types";
 import { ProductCard } from "@/components/product/product-card";
 import { QuickView } from "@/components/product/quick-view";
+import { Pagination } from "@/components/ui/pagination";
 import { formatPrice } from "@/lib/utils";
 
 type Sort = "popular" | "rating" | "price-asc" | "price-desc" | "newest";
@@ -20,56 +22,78 @@ const sortOptions: { value: Sort; label: string }[] = [
 const PRICE_MAX = 2000;
 
 export function ShopClient({
-  initialCategory,
-  initialQuery,
+  category,
+  query,
+  sort,
+  maxPrice,
+  page,
+  pageSize,
+  total,
   products,
   categories,
+  facets,
 }: {
-  initialCategory?: string;
-  initialQuery?: string;
+  category: string;
+  query: string;
+  sort: Sort;
+  maxPrice: number;
+  page: number;
+  pageSize: number;
+  total: number;
   products: Product[];
   categories: Category[];
+  facets: { all: number; bySlug: Record<string, number> };
 }) {
-  const [active, setActive] = useState<CategorySlug | "all">(
-    (initialCategory as CategorySlug) || "all"
-  );
-  const [query, setQuery] = useState(initialQuery ?? "");
-  const [sort, setSort] = useState<Sort>("popular");
-  const [maxPrice, setMaxPrice] = useState(PRICE_MAX);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Local UI state only; the server (via the URL) is the source of truth.
+  const [searchInput, setSearchInput] = useState(query);
+  const [price, setPrice] = useState(maxPrice);
   const [quick, setQuick] = useState<Product | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const filtered = useMemo(() => {
-    let list = products.filter((p) => p.price <= maxPrice);
-    if (active !== "all") list = list.filter((p) => p.category === active);
-    const term = query.trim().toLowerCase();
-    if (term) {
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.distillery.toLowerCase().includes(term) ||
-          p.categoryLabel.toLowerCase().includes(term) ||
-          p.tags.some((t) => t.toLowerCase().includes(term))
-      );
-    }
-    switch (sort) {
-      case "rating":
-        list = [...list].sort((a, b) => b.rating - a.rating);
-        break;
-      case "price-asc":
-        list = [...list].sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        list = [...list].sort((a, b) => b.price - a.price);
-        break;
-      case "newest":
-        list = [...list].sort((a) => (a.badge === "New" ? -1 : 1));
-        break;
-      default:
-        list = [...list].sort((a, b) => b.reviews - a.reviews);
-    }
-    return list;
-  }, [active, sort, maxPrice, products, query]);
+  // Build a URL preserving the other params; `null`/"" clears a param.
+  const navigate = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [k, v] of Object.entries(updates)) {
+        if (v === null || v === "") params.delete(k);
+        else params.set(k, v);
+      }
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [router, pathname, searchParams]
+  );
+
+  // Debounce the search box → URL (resets to page 1). Guard prevents a
+  // redundant push on mount and after navigation settles.
+  useEffect(() => {
+    if (searchInput === query) return;
+    const t = setTimeout(() => navigate({ q: searchInput || null, page: null }), 400);
+    return () => clearTimeout(t);
+  }, [searchInput, query, navigate]);
+
+  // Debounce the price slider → URL.
+  useEffect(() => {
+    if (price === maxPrice) return;
+    const t = setTimeout(
+      () => navigate({ maxPrice: price >= PRICE_MAX ? null : String(price), page: null }),
+      400
+    );
+    return () => clearTimeout(t);
+  }, [price, maxPrice, navigate]);
+
+  const pageCount = Math.ceil(total / pageSize);
+  const hrefForPage = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (p <= 1) params.delete("page");
+    else params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  };
 
   const Filters = (
     <div className="space-y-8">
@@ -78,14 +102,14 @@ export function ShopClient({
         <div className="relative mt-4">
           <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search bottles…"
             className="h-10 w-full rounded-full border border-hairline bg-night/60 pl-9 pr-8 text-sm text-cream placeholder:text-muted-2 focus:border-gold focus:outline-none"
           />
-          {query && (
+          {searchInput && (
             <button
-              onClick={() => setQuery("")}
+              onClick={() => setSearchInput("")}
               aria-label="Clear search"
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-gold"
             >
@@ -97,14 +121,19 @@ export function ShopClient({
       <div>
         <h3 className="text-[0.7rem] uppercase tracking-[0.22em] text-gold">Category</h3>
         <ul className="mt-4 space-y-1">
-          <FilterRow label="All Spirits" count={products.length} activeState={active === "all"} onClick={() => setActive("all")} />
+          <FilterRow
+            label="All Spirits"
+            count={facets.all}
+            activeState={category === "all"}
+            onClick={() => navigate({ category: null, page: null })}
+          />
           {categories.map((c) => (
             <FilterRow
               key={c.slug}
               label={c.name}
-              count={products.filter((p) => p.category === c.slug).length}
-              activeState={active === c.slug}
-              onClick={() => setActive(c.slug)}
+              count={facets.bySlug[c.slug] ?? 0}
+              activeState={category === c.slug}
+              onClick={() => navigate({ category: c.slug, page: null })}
             />
           ))}
         </ul>
@@ -117,13 +146,13 @@ export function ShopClient({
           min={50}
           max={PRICE_MAX}
           step={50}
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(Number(e.target.value))}
+          value={price}
+          onChange={(e) => setPrice(Number(e.target.value))}
           className="mt-4 w-full accent-[var(--color-gold)]"
         />
         <div className="mt-2 flex justify-between text-xs text-muted">
           <span>$50</span>
-          <span className="text-cream">{formatPrice(maxPrice)}</span>
+          <span className="text-cream">{formatPrice(price)}</span>
         </div>
       </div>
     </div>
@@ -141,9 +170,9 @@ export function ShopClient({
           {/* Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-hairline pb-5">
             <p className="text-sm text-muted">
-              <span className="text-cream">{filtered.length}</span> bottles
-              {active !== "all" && (
-                <> in <span className="text-gold">{categories.find((c) => c.slug === active)?.name}</span></>
+              <span className="text-cream">{total}</span> bottles
+              {category !== "all" && (
+                <> in <span className="text-gold">{categories.find((c) => c.slug === category)?.name}</span></>
               )}
               {query.trim() && (
                 <> for “<span className="text-gold">{query.trim()}</span>”</>
@@ -159,7 +188,7 @@ export function ShopClient({
               <label className="relative">
                 <select
                   value={sort}
-                  onChange={(e) => setSort(e.target.value as Sort)}
+                  onChange={(e) => navigate({ sort: e.target.value, page: null })}
                   className="appearance-none rounded-full border border-hairline bg-night px-5 py-2.5 pr-10 text-xs text-cream focus:border-gold focus:outline-none"
                 >
                   {sortOptions.map((o) => (
@@ -174,14 +203,17 @@ export function ShopClient({
           </div>
 
           {/* Grid */}
-          {filtered.length === 0 ? (
+          {products.length === 0 ? (
             <p className="py-24 text-center text-muted">No bottles match your filters.</p>
           ) : (
-            <div className="mt-8 grid grid-cols-1 gap-4 xs:grid-cols-2 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} onQuickView={setQuick} />
-              ))}
-            </div>
+            <>
+              <div className="mt-8 grid grid-cols-1 gap-4 xs:grid-cols-2 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4">
+                {products.map((p) => (
+                  <ProductCard key={p.id} product={p} onQuickView={setQuick} />
+                ))}
+              </div>
+              <Pagination page={page} pageCount={pageCount} hrefFor={hrefForPage} />
+            </>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Calendar,
   ChevronRight,
@@ -18,6 +18,9 @@ import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { AdminCustomer, AdminData } from "../types";
 import { DetailModal, DetailRow, ProfileStat, Panel } from "../shared";
+import { Pagination } from "@/components/ui/pagination";
+
+const PAGE_SIZE = 20;
 
 /* ------------------------------------------------------------------ *
  * Tag → Badge tone mapping
@@ -40,33 +43,55 @@ type CustomerTag = (typeof ALL_TAGS)[number];
 export function Customers({ data }: { data: AdminData }) {
   const [detail, setDetail] = useState<AdminCustomer | null>(null);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeTag, setActiveTag] = useState<CustomerTag | "All">("All");
 
-  const term = query.trim().toLowerCase();
+  // Server-paginated state
+  const [page, setPage] = useState(1);
+  const [customers, setCustomers] = useState<AdminCustomer[]>([]);
+  const [total, setTotal] = useState(0);
+  const [tagCounts, setTagCounts] = useState<Record<string, number>>({});
+  const [totalAll, setTotalAll] = useState(data.kpis.customers);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = data.customers.filter((c) => {
-    const matchesSearch =
-      !term ||
-      c.name.toLowerCase().includes(term) ||
-      c.email.toLowerCase().includes(term);
-    const matchesTag =
-      activeTag === "All" || c.tags.includes(activeTag);
-    return matchesSearch && matchesTag;
-  });
+  // Debounce the search box so we don't fetch on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
 
-  /* Tag counts (against search-filtered pool so pills reflect the search) */
-  const searchFiltered = term
-    ? data.customers.filter(
-        (c) =>
-          c.name.toLowerCase().includes(term) ||
-          c.email.toLowerCase().includes(term)
-      )
-    : data.customers;
+  const load = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page) });
+    if (debouncedQuery) params.set("q", debouncedQuery);
+    if (activeTag !== "All") params.set("tag", activeTag);
 
-  const tagCounts = ALL_TAGS.reduce<Record<string, number>>((acc, tag) => {
-    acc[tag] = searchFiltered.filter((c) => c.tags.includes(tag)).length;
-    return acc;
-  }, {});
+    const res = await fetch(`/api/admin/customers?${params.toString()}`);
+    if (res.ok) {
+      const d = await res.json();
+      setCustomers(d.items);
+      setTotal(d.total);
+      setTagCounts(d.tagCounts);
+      setTotalAll(d.totalAll);
+    }
+    setLoading(false);
+  }, [page, debouncedQuery, activeTag]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Changing search or tag resets to the first page.
+  const onSearch = (v: string) => {
+    setQuery(v);
+    setPage(1);
+  };
+  const onTag = (v: CustomerTag | "All") => {
+    setActiveTag(v);
+    setPage(1);
+  };
+
+  const pageCount = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -75,7 +100,7 @@ export function Customers({ data }: { data: AdminData }) {
         <h1 className="font-display text-2xl text-cream sm:text-3xl">
           Customers{" "}
           <span className="text-base text-muted">
-            ({data.customers.length})
+            ({totalAll})
           </span>
         </h1>
         <label className="relative">
@@ -85,7 +110,7 @@ export function Customers({ data }: { data: AdminData }) {
           />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)}
             placeholder="Search name or email…"
             className="h-10 w-full rounded-full border border-hairline bg-night/60 pl-9 pr-4 text-sm text-cream placeholder:text-muted-2 focus:border-gold focus:outline-none sm:w-72"
           />
@@ -95,13 +120,12 @@ export function Customers({ data }: { data: AdminData }) {
       {/* Tag filter pills */}
       <div className="flex flex-wrap gap-2">
         {(["All", ...ALL_TAGS] as const).map((tag) => {
-          const count =
-            tag === "All" ? searchFiltered.length : tagCounts[tag];
+          const count = tag === "All" ? totalAll : tagCounts[tag] ?? 0;
           const isActive = activeTag === tag;
           return (
             <button
               key={tag}
-              onClick={() => setActiveTag(tag)}
+              onClick={() => onTag(tag)}
               className={`rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide transition-colors ${
                 isActive
                   ? "border-gold bg-gold/20 text-gold"
@@ -122,19 +146,21 @@ export function Customers({ data }: { data: AdminData }) {
       </div>
 
       {/* Body */}
-      {data.customers.length === 0 ? (
+      {loading && customers.length === 0 ? (
         <Panel>
-          <p className="text-sm text-muted">No customers yet.</p>
+          <p className="flex items-center gap-2 text-sm text-muted">
+            <Users size={16} className="animate-pulse" /> Loading customers…
+          </p>
         </Panel>
-      ) : filtered.length === 0 ? (
+      ) : customers.length === 0 ? (
         <Panel>
           <p className="text-sm text-muted">
             No customers match the current filter.
           </p>
         </Panel>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {filtered.map((c) => (
+        <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${loading ? "opacity-60" : ""}`}>
+          {customers.map((c) => (
             <button
               key={c.id}
               onClick={() => setDetail(c)}
@@ -205,6 +231,8 @@ export function Customers({ data }: { data: AdminData }) {
           ))}
         </div>
       )}
+
+      <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
 
       {detail && (
         <CustomerDetailModal
