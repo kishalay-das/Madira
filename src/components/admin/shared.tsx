@@ -383,8 +383,12 @@ export function DetailModal({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto p-4 py-8">
+      {/* Scrim is `fixed` (not `absolute`) so it always covers the full
+          viewport — an absolute scrim inside this scroll container only spans
+          the initial fold, letting the page show through when a tall modal is
+          scrolled. */}
       <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
+        className="fixed inset-0 bg-[var(--scrim)] backdrop-blur-sm"
         onClick={onClose}
       />
       <div

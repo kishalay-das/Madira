@@ -76,6 +76,10 @@ export default async function AccountPage() {
             .filter(Boolean)
             .join(", "),
           primary: a.isPrimary,
+          line1: a.line1,
+          city: a.city,
+          postalCode: a.postalCode,
+          phone: a.phone ?? "",
         }))}
         wishlist={wishlist.map((w) => ({
           id: w.product.id,

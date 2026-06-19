@@ -69,16 +69,29 @@ export async function POST(request: Request) {
 
   // A delivery address is required, and must belong to this user.
   let validAddressId: string | null = null;
+  let addressPhone: string | null = null;
   if (addressId) {
     const addr = await prisma.address.findFirst({
       where: { id: addressId, userId: session.user.id },
-      select: { id: true },
+      select: { id: true, phone: true },
     });
     validAddressId = addr?.id ?? null;
+    addressPhone = addr?.phone ?? null;
   }
   if (!validAddressId) {
     return NextResponse.json(
       { error: "A delivery address is required to place an order." },
+      { status: 422 }
+    );
+  }
+  // A contact phone number is mandatory for delivery. Legacy addresses saved
+  // before this rule may lack one — prompt the customer to add it.
+  if (!addressPhone || !addressPhone.trim()) {
+    return NextResponse.json(
+      {
+        error:
+          "A delivery phone number is required. Please add a phone number to your address.",
+      },
       { status: 422 }
     );
   }

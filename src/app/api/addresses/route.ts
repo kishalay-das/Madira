@@ -3,7 +3,9 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-const schema = z.object({
+// Shared by POST (create) and PATCH (edit). Phone is required: it is the
+// delivery contact for every order placed against this address.
+export const addressSchema = z.object({
   label: z.string().min(1).max(40),
   line1: z.string().min(2).max(120),
   line2: z.string().max(120).optional(),
@@ -14,9 +16,7 @@ const schema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^[0-9+()\-\s]{6,20}$/, "Enter a valid phone number.")
-    .optional()
-    .or(z.literal("")),
+    .regex(/^[0-9+()\-\s]{6,20}$/, "Enter a valid phone number."),
   isPrimary: z.boolean().default(false),
 });
 
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
-  const parsed = schema.safeParse(await request.json().catch(() => null));
+  const parsed = addressSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Validation failed", issues: parsed.error.flatten().fieldErrors },
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       ...rest,
       userId,
       landmark: landmark?.trim() || null,
-      phone: phone?.trim() || null,
+      phone: phone.trim(),
     },
   });
   return NextResponse.json({ address }, { status: 201 });

@@ -352,11 +352,12 @@ export function CheckoutClient({
                       required
                     />
                     <Field
-                      label="Phone (optional)"
+                      label="Phone"
                       placeholder="+1 555 123 4567"
                       type="tel"
                       value={newAddr.phone}
                       onChange={(v) => setNewAddr((p) => ({ ...p, phone: v }))}
+                      required
                     />
                   </div>
                   {addrErr && <p className="text-xs text-burgundy">{addrErr}</p>}

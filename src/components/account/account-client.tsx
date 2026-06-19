@@ -11,6 +11,7 @@ import {
   LogOut,
   MapPin,
   Package,
+  Pencil,
   Sparkles,
   Star,
   Trash2,
@@ -47,6 +48,11 @@ export interface AccountAddress {
   label: string;
   line: string;
   primary: boolean;
+  // Raw fields for prefilling the edit form.
+  line1: string;
+  city: string;
+  postalCode: string;
+  phone: string;
 }
 export interface AccountWishlistItem {
   id: string;
@@ -251,6 +257,7 @@ function Wishlist({ items }: { items: AccountWishlistItem[] }) {
 function Addresses({ addresses }: { addresses: AccountAddress[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<AccountAddress | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   async function remove(id: string) {
@@ -258,6 +265,11 @@ function Addresses({ addresses }: { addresses: AccountAddress[] }) {
     await fetch(`/api/addresses/${id}`, { method: "DELETE" });
     setBusy(null);
     router.refresh();
+  }
+
+  function closeModal() {
+    setOpen(false);
+    setEditing(null);
   }
 
   return (
@@ -271,6 +283,13 @@ function Addresses({ addresses }: { addresses: AccountAddress[] }) {
               <div className="flex items-center gap-2">
                 {a.primary && <Badge tone="Best Seller">Primary</Badge>}
                 <button
+                  onClick={() => setEditing(a)}
+                  aria-label="Edit address"
+                  className="text-muted-2 transition-colors hover:text-gold"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
                   onClick={() => remove(a.id)}
                   disabled={busy === a.id}
                   aria-label="Delete address"
@@ -281,6 +300,7 @@ function Addresses({ addresses }: { addresses: AccountAddress[] }) {
               </div>
             </div>
             <p className="mt-2 text-sm text-muted">{a.line}</p>
+            {a.phone && <p className="mt-1 text-xs text-muted-2">{a.phone}</p>}
           </div>
         ))}
         <button
@@ -293,11 +313,12 @@ function Addresses({ addresses }: { addresses: AccountAddress[] }) {
       {addresses.length === 0 && (
         <p className="mt-4 text-xs text-muted">No saved addresses yet.</p>
       )}
-      {open && (
+      {(open || editing) && (
         <AddressModal
-          onClose={() => setOpen(false)}
+          editing={editing}
+          onClose={closeModal}
           onSaved={() => {
-            setOpen(false);
+            closeModal();
             router.refresh();
           }}
         />
@@ -306,13 +327,22 @@ function Addresses({ addresses }: { addresses: AccountAddress[] }) {
   );
 }
 
-function AddressModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function AddressModal({
+  editing,
+  onClose,
+  onSaved,
+}: {
+  editing?: AccountAddress | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const [form, setForm] = useState({
-    label: "Home",
-    line1: "",
-    city: "",
-    postalCode: "",
-    isPrimary: false,
+    label: editing?.label ?? "Home",
+    line1: editing?.line1 ?? "",
+    city: editing?.city ?? "",
+    postalCode: editing?.postalCode ?? "",
+    phone: editing?.phone ?? "",
+    isPrimary: editing?.primary ?? false,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -324,11 +354,14 @@ function AddressModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
     e.preventDefault();
     setError(null);
     setSaving(true);
-    const res = await fetch("/api/addresses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    const res = await fetch(
+      editing ? `/api/addresses/${editing.id}` : "/api/addresses",
+      {
+        method: editing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      }
+    );
     setSaving(false);
     if (res.ok) onSaved();
     else {
@@ -342,7 +375,9 @@ function AddressModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
       <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={onClose} />
       <form onSubmit={submit} className="glass-dark relative z-10 w-full max-w-md rounded-[var(--radius-luxe)] p-7">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-xl text-cream">New Address</h2>
+          <h2 className="font-display text-xl text-cream">
+            {editing ? "Edit Address" : "New Address"}
+          </h2>
           <button type="button" onClick={onClose} aria-label="Close">
             <X size={18} className="text-parchment hover:text-cream" />
           </button>
@@ -354,6 +389,7 @@ function AddressModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
             <AccountField label="City" value={form.city} onChange={(v) => set("city", v)} placeholder="New York" required />
             <AccountField label="Postal code" value={form.postalCode} onChange={(v) => set("postalCode", v)} placeholder="10016" required />
           </div>
+          <AccountField label="Phone" value={form.phone} onChange={(v) => set("phone", v)} placeholder="+1 555 123 4567" type="tel" required />
           <label className="flex items-center gap-2 text-sm text-parchment">
             <input
               type="checkbox"
@@ -367,7 +403,7 @@ function AddressModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
         </div>
         <Button type="submit" variant="gold" className="mt-6 w-full" disabled={saving}>
           {saving && <Loader2 size={16} className="animate-spin" />}
-          Save Address
+          {editing ? "Save Changes" : "Save Address"}
         </Button>
       </form>
     </div>
@@ -380,17 +416,20 @@ function AccountField({
   onChange,
   placeholder,
   required,
+  type = "text",
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   required?: boolean;
+  type?: string;
 }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-[0.62rem] uppercase tracking-widest text-muted">{label}</span>
       <input
+        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
