@@ -40,7 +40,14 @@ export default async function AccountPage() {
     prisma.order.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { items: true } } },
+      take: 10,
+      select: {
+        number: true,
+        createdAt: true,
+        status: true,
+        total: true,
+        _count: { select: { items: true } },
+      },
     }),
     prisma.address.findMany({ where: { userId }, orderBy: { isPrimary: "desc" } }),
     prisma.wishlistItem.findMany({

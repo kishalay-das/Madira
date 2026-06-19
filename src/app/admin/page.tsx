@@ -9,113 +9,33 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const titleCase = (s: string) =>
-  s.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
-const fmtDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-
-const fmtMonth = (d: Date) =>
-  d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
-
-type AddrParts = {
-  line1: string;
-  line2: string | null;
-  landmark?: string | null;
-  city: string;
-  postalCode: string;
-  country: string;
-};
-const oneLineAddress = (a: AddrParts) =>
-  [
-    a.line1,
-    a.line2,
-    a.landmark ? `near ${a.landmark}` : null,
-    `${a.city} ${a.postalCode}`,
-    a.country,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
 export default async function AdminPage() {
   const session = await auth();
   if (!session?.user) redirect("/login?callbackUrl=/admin");
   if (session.user.role !== "ADMIN") redirect("/");
 
-  const [
-    products,
-    orders,
-    customers,
-    coupons,
-    reviews,
-    revenueAgg,
-    orderCount,
-    customerCount,
-    cats,
-    blogPosts,
-    analyticsOrders,
-  ] = await Promise.all([
-    prisma.product.findMany({ include: { category: true }, orderBy: { createdAt: "asc" } }),
-    prisma.order.findMany({
-      include: {
-        user: { select: { name: true, email: true } },
-        address: true,
-        coupon: { select: { code: true } },
-        items: { include: { product: { select: { name: true, slug: true, segment: true } } } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 25,
-    }),
-    prisma.user.findMany({
-      where: { role: "CUSTOMER" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        tier: true,
-        loyaltyPoints: true,
-        referralCode: true,
-        createdAt: true,
-        addresses: {
-          select: {
-            label: true,
-            line1: true,
-            line2: true,
-            city: true,
-            postalCode: true,
-            country: true,
-          },
+  // Each admin module (orders, customers, coupons, reviews, blog) fetches its
+  // own paginated page from /api/admin/* on mount, so we only fetch here what
+  // the Dashboard renders: KPIs, the analytics slice, the product catalog
+  // (low-stock list + product tab seed counts) and category options.
+  const [products, revenueAgg, orderCount, customerCount, cats, analyticsOrders] =
+    await Promise.all([
+      prisma.product.findMany({ include: { category: true }, orderBy: { createdAt: "asc" } }),
+      prisma.order.aggregate({ _sum: { total: true } }),
+      prisma.order.count(),
+      prisma.user.count({ where: { role: "CUSTOMER" } }),
+      prisma.category.findMany({
+        select: {
+          slug: true,
+          name: true,
+          hue: true,
+          _count: { select: { products: true } },
         },
-        orders: {
-          select: { number: true, total: true, status: true, createdAt: true },
-        },
-      },
-    }),
-    prisma.coupon.findMany({ orderBy: { redemptions: "desc" } }),
-    prisma.review.findMany({
-      include: {
-        product: { select: { name: true, slug: true } },
-        user: { select: { name: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 60,
-    }),
-    prisma.order.aggregate({ _sum: { total: true } }),
-    prisma.order.count(),
-    prisma.user.count({ where: { role: "CUSTOMER" } }),
-    prisma.category.findMany({
-      select: {
-        slug: true,
-        name: true,
-        hue: true,
-        _count: { select: { products: true } },
-      },
-      orderBy: { name: "asc" },
-    }),
-    prisma.blogPost.findMany({ orderBy: { publishedAt: "desc" } }),
-    // Lightweight slice for dashboard analytics (trends, segment split,
-    // best sellers). Capped so the query stays cheap on large catalogs.
-    prisma.order.findMany({
+        orderBy: { name: "asc" },
+      }),
+      // Lightweight slice for dashboard analytics (trends, segment split,
+      // best sellers). Capped so the query stays cheap on large catalogs.
+      prisma.order.findMany({
       select: {
         total: true,
         createdAt: true,
@@ -242,118 +162,14 @@ export default async function AdminPage() {
           category: p.category?.slug ?? "whiskey",
           segment: p.segment === "STANDARD" ? "STANDARD" : "PREMIUM",
         })),
-        orders: orders.map((o) => ({
-          id: o.id,
-          number: o.number,
-          segment: o.items.some((it) => it.product?.segment === "STANDARD")
-            ? "STANDARD"
-            : "PREMIUM",
-          customer: o.user?.name ?? o.user?.email ?? "Guest",
-          customerEmail: o.user?.email ?? "",
-          total: Number(o.total),
-          subtotal: Number(o.subtotal),
-          discount: Number(o.discount),
-          shipping: Number(o.shipping),
-          tax: Number(o.tax),
-          status: o.status,
-          statusLabel: titleCase(o.status),
-          deliverySlot: titleCase(o.deliverySlot),
-          paymentMethod: o.paymentMethod,
-          codFee: Number(o.codFee),
-          giftWrap: o.giftWrap,
-          date: fmtDate(o.createdAt),
-          createdAt: o.createdAt.toISOString(),
-          couponCode: o.coupon?.code ?? null,
-          address: o.address ? oneLineAddress(o.address) : null,
-          deliveryPhone: o.address?.phone ?? null,
-          deliveryLat: o.deliveryLat ?? null,
-          deliveryLng: o.deliveryLng ?? null,
-          deliveryAccuracy: o.deliveryAccuracy ?? null,
-          items: o.items.map((it) => ({
-            name: it.product?.name ?? "Item",
-            slug: it.product?.slug ?? "",
-            quantity: it.quantity,
-            unitPrice: Number(it.unitPrice),
-          })),
-        })),
-        customers: customers
-          .map((c) => {
-            const sorted = [...c.orders].sort(
-              (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-            );
-            const orderCount = c.orders.length;
-            const spend = c.orders.reduce((s, o) => s + Number(o.total), 0);
-            const aov = orderCount ? spend / orderCount : 0;
-            const last = sorted[0]?.createdAt ?? null;
-            const daysSinceLast = last ? (now - last.getTime()) / DAY : null;
-
-            // Derived insight tags for at-a-glance segmentation.
-            const tags: string[] = [];
-            if (orderCount === 0) tags.push("New");
-            if (spend >= 1000) tags.push("VIP");
-            else if (spend >= 400) tags.push("High spender");
-            if (daysSinceLast != null && daysSinceLast > 90) tags.push("At risk");
-
-            return {
-              id: c.id,
-              name: c.name ?? "Member",
-              email: c.email,
-              tier: titleCase(c.tier),
-              loyaltyPoints: c.loyaltyPoints,
-              referralCode: c.referralCode,
-              memberSince: fmtMonth(c.createdAt),
-              orders: orderCount,
-              spend,
-              aov,
-              lastPurchase: last ? fmtDate(last) : null,
-              tags,
-              addresses: c.addresses.map((a) => ({
-                label: a.label,
-                line: oneLineAddress(a),
-              })),
-              recentOrders: sorted.slice(0, 8).map((o) => ({
-                number: o.number,
-                total: Number(o.total),
-                statusLabel: titleCase(o.status),
-                date: fmtDate(o.createdAt),
-              })),
-            };
-          })
-          .sort((a, b) => b.spend - a.spend),
-        coupons: coupons.map((c) => ({
-          id: c.id,
-          code: c.code,
-          description: c.description ?? "",
-          percentOff: c.percentOff,
-          amountOff: c.amountOff != null ? Number(c.amountOff) : null,
-          active: c.active,
-          expiresAt: c.expiresAt ? c.expiresAt.toISOString().slice(0, 10) : null,
-          redemptions: c.redemptions,
-        })),
-        reviews: reviews.map((r) => ({
-          id: r.id,
-          product: r.product?.name ?? "Product",
-          productSlug: r.product?.slug ?? "",
-          author: r.user?.name ?? "Member",
-          rating: r.rating,
-          title: r.title,
-          body: r.body,
-          verified: r.verified,
-          date: fmtDate(r.createdAt),
-        })),
+        // These lists are loaded per-page by each module from /api/admin/*;
+        // the server only needs to seed the dashboard + product tab.
+        orders: [],
+        customers: [],
+        coupons: [],
+        reviews: [],
         categoryOptions: cats.map((c) => ({ slug: c.slug, name: c.name })),
-        blog: blogPosts.map((b) => ({
-          id: b.id,
-          slug: b.slug,
-          title: b.title,
-          excerpt: b.excerpt ?? "",
-          content: b.content,
-          coverImage: b.coverImage,
-          author: b.author,
-          tags: b.tags,
-          published: b.published,
-          date: fmtDate(b.publishedAt),
-        })),
+        blog: [],
       }}
     />
   );

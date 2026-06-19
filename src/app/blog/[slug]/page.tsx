@@ -3,10 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getBlogPostBySlug } from "@/lib/queries";
+import { getBlogPostBySlug, getBlogSlugs } from "@/lib/queries";
 import { PostContent } from "@/components/blog/post-content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  const slugs = await getBlogSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { isAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 
@@ -32,11 +33,17 @@ export async function PATCH(
 
   const data: Prisma.BlogPostUpdateInput = { ...parsed.data };
 
+  let slug: string;
   try {
-    await prisma.blogPost.update({ where: { id }, data });
+    const updated = await prisma.blogPost.update({ where: { id }, data, select: { slug: true } });
+    slug = updated.slug;
   } catch {
     return NextResponse.json({ error: "Post not found" }, { status: 404 });
   }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+
   return NextResponse.json({ ok: true });
 }
 
@@ -48,10 +55,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
+  let slug: string;
   try {
-    await prisma.blogPost.delete({ where: { id } });
-    return NextResponse.json({ ok: true });
+    const deleted = await prisma.blogPost.delete({ where: { id }, select: { slug: true } });
+    slug = deleted.slug;
   } catch {
     return NextResponse.json({ error: "Post not found" }, { status: 404 });
   }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+
+  return NextResponse.json({ ok: true });
 }

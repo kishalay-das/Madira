@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -143,7 +143,7 @@ export function AccountClient({ user, orders, addresses, wishlist }: Props) {
       {/* Content */}
       <div className="min-w-0">
         {tab === "overview" && <Overview user={user} />}
-        {tab === "orders" && <Orders orders={orders} />}
+        {tab === "orders" && <Orders orders={orders} total={user.orderCount} />}
         {tab === "wishlist" && <Wishlist items={wishlist} />}
         {tab === "addresses" && <Addresses addresses={addresses} />}
         {tab === "membership" && <Membership tier={user.tier} />}
@@ -200,13 +200,20 @@ function Overview({ user }: { user: AccountUser }) {
   );
 }
 
-function Orders({ orders }: { orders: AccountOrder[] }) {
+function Orders({ orders, total: initialTotal }: { orders: AccountOrder[]; total: number }) {
   const [items, setItems] = useState<AccountOrder[]>(orders);
-  const [total, setTotal] = useState(orders.length);
+  const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  // Skip the fetch on initial mount — the `orders` prop already covers page 1.
+  const hydrated = useRef(false);
+
   useEffect(() => {
+    if (!hydrated.current) {
+      hydrated.current = true;
+      return;
+    }
     let active = true;
     async function load(p: number) {
       setLoading(true);

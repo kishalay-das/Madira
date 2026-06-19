@@ -49,14 +49,14 @@ export default async function ProductPage({
   const [related, reviewRows, wished] = await Promise.all([
     getRelatedProducts(product),
     prisma.review.findMany({
-      where: { product: { slug } },
+      where: { productId: product.id },
       include: { user: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
-      take: 12,
+      take: 8,
     }),
     session?.user
       ? prisma.wishlistItem.findFirst({
-          where: { userId: session.user.id, product: { slug } },
+          where: { userId: session.user.id, productId: product.id },
           select: { id: true },
         })
       : null,

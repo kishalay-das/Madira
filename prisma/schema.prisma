@@ -131,6 +131,8 @@ model Address {
   isPrimary  Boolean @default(false)
 
   orders Order[]
+
+  @@index([userId])
 }
 
 model Order {
@@ -163,6 +165,9 @@ model Order {
   items OrderItem[]
 
   @@index([userId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([couponId])
 }
 
 model OrderItem {
@@ -173,6 +178,9 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   unitPrice Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Review {

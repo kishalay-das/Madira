@@ -32,6 +32,9 @@ export async function GET(request: Request) {
   const rows = await prisma.user.findMany({
     where: { role: "CUSTOMER" },
     select: customerSelect,
+    // Scale ceiling: derived tags can't be expressed in SQL, so we can't truly
+    // paginate at the DB level — cap the in-memory load at 2000 customers.
+    take: 2000,
   });
 
   const now = Date.now();

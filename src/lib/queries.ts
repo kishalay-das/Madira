@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type {
   Category as DbCategory,
   Product as DbProduct,
@@ -171,13 +172,17 @@ export async function getProductSlugs(): Promise<string[]> {
   return rows.map((r) => r.slug);
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const row = await prisma.product.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
-  return row ? toProduct(row) : null;
-}
+// Wrapped in React `cache()` so the product page's two calls per request
+// (generateMetadata + the page body) dedupe into a single query.
+export const getProductBySlug = cache(
+  async (slug: string): Promise<Product | null> => {
+    const row = await prisma.product.findUnique({
+      where: { slug },
+      include: { category: true },
+    });
+    return row ? toProduct(row) : null;
+  }
+);
 
 export async function getRelatedProducts(product: Product): Promise<Product[]> {
   const segment = product.segment ?? "PREMIUM";

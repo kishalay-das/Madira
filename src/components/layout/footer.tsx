@@ -1,7 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { FooterGate } from "./footer-gate";
 
 /* Brand glyphs (lucide dropped brand icons, so we inline minimal marks) */
 function IgIcon({ size = 16 }: { size?: number }) {
@@ -84,10 +82,8 @@ const socials = [
   { Icon: YtIcon, href: "#", label: "YouTube" },
 ];
 
-export function Footer() {
-  const pathname = usePathname();
-  if (pathname.startsWith("/admin")) return null;
-
+/* Server Component — no "use client", stays out of the client bundle */
+function FooterBody() {
   return (
     <footer className="relative mt-32 border-t border-hairline bg-void/60">
       <div className="container-luxe py-16">
@@ -168,5 +164,21 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+/*
+ * Public export consumed by src/app/layout.tsx as <Footer />.
+ * FooterBody is a Server Component; FooterGate is a tiny Client Component
+ * that hides the footer on /cart and /admin/* using usePathname().
+ * Passing a Server Component as children to a Client Component is explicitly
+ * supported by the RSC interleaving pattern — see Next.js docs
+ * "Interleaving Server and Client Components".
+ */
+export function Footer() {
+  return (
+    <FooterGate>
+      <FooterBody />
+    </FooterGate>
   );
 }

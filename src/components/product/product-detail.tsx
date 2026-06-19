@@ -451,7 +451,7 @@ function ProductGallery({
                 className="h-full w-full object-contain"
               />
             ) : (
-              <MagnifyImage src={current.src} alt={name} />
+              <MagnifyImage src={current.src} alt={name} priority={active === 0} />
             )}
           </motion.div>
         </AnimatePresence>
@@ -510,7 +510,7 @@ function ProductGallery({
  * Hover magnifier: a circular lens follows the cursor and shows a zoomed,
  * cover-accurate portion of the image (like a magnifying glass). Pointer-only.
  */
-function MagnifyImage({ src, alt }: { src: string; alt: string }) {
+function MagnifyImage({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const [nat, setNat] = useState<{ w: number; h: number } | null>(null);
   const [lens, setLens] = useState<{
@@ -575,6 +575,7 @@ function MagnifyImage({ src, alt }: { src: string; alt: string }) {
         fill
         sizes="(max-width: 1024px) 100vw, 45vw"
         className="object-contain"
+        priority={priority}
         unoptimized={src.startsWith("data:")}
       />
       {lens.show && nat && (

@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { getBlogPosts, countBlogPosts } from "@/lib/queries";
 import { Pagination } from "@/components/ui/pagination";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Blog",

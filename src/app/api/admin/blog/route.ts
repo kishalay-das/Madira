@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { isAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { serializeBlogPost } from "@/lib/admin-serialize";
@@ -77,6 +78,9 @@ export async function POST(request: Request) {
       published: d.published,
     },
   });
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
 
   return NextResponse.json({ post: { id: post.id, slug } }, { status: 201 });
 }

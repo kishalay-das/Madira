@@ -2,12 +2,18 @@ import type { MetadataRoute } from "next";
 import { getProductSlugs, getCategories, getBlogSlugs } from "@/lib/queries";
 import { SITE_URL as BASE } from "@/lib/site";
 
-// Generated at request time (not build) so it can read live data from the DB.
-export const dynamic = "force-dynamic";
+// Revalidated daily. Using a stable constant rather than new Date() so
+// crawlers only see lastModified change when content actually changes
+// (on-demand revalidation from admin mutations keeps this fresh).
+export const revalidate = 86400;
+
+// Stable build-time stamp used for entries without a per-record timestamp.
+// On-demand revalidation (revalidatePath) from admin routes keeps content
+// current; this constant simply avoids reporting every entry as changed on
+// every crawl.
+const BUILD_DATE = new Date("2026-06-19T00:00:00.000Z");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
-
   // Public, indexable routes. Account/admin/login/register and the cart are
   // intentionally excluded (private or transactional).
   const routes: Array<{ path: string; priority: number }> = [
@@ -29,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = routes.map(({ path, priority }) => ({
     url: `${BASE}${path}`,
-    lastModified: now,
+    lastModified: BUILD_DATE,
     changeFrequency: "weekly",
     priority,
   }));
@@ -45,19 +51,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
     const productRoutes: MetadataRoute.Sitemap = slugs.map((slug) => ({
       url: `${BASE}/product/${slug}`,
-      lastModified: now,
+      lastModified: BUILD_DATE,
       changeFrequency: "weekly",
       priority: 0.7,
     }));
     const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
       url: `${BASE}/shop?category=${c.slug}`,
-      lastModified: now,
+      lastModified: BUILD_DATE,
       changeFrequency: "weekly",
       priority: 0.6,
     }));
     const blogRoutes: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
       url: `${BASE}/blog/${slug}`,
-      lastModified: now,
+      lastModified: BUILD_DATE,
       changeFrequency: "monthly",
       priority: 0.6,
     }));
